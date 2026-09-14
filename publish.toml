@@ -1,0 +1,25 @@
+[site]
+name = "sychostar"
+url = "https://lihaoze-bob.github.io/notes-site/"
+repository = "LiHaoze-Bob/notes-site"
+branch = "main"
+
+[[sources]]
+path = "30_课程"
+destination = "courses"
+
+[[sources]]
+path = "40_知识库"
+destination = "knowledge"
+
+[[sources]]
+path = "60_研究/62_技术积累"
+destination = "knowledge/tech"
+
+[[sources]]
+path = "60_研究/63_Reading"
+destination = "reading"
+
+[labels]
+"courses/DL-ZJU" = "深度学习"
+"knowledge/tech" = "技术积累"

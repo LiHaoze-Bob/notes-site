@@ -1,0 +1,18 @@
+{
+  "notes": [
+    {
+      "path": "courses/DL-ZJU/Lecture3 卷积神经网络CNN.md",
+      "title": "Lecture3 卷积神经网络CNN"
+    },
+    {
+      "path": "courses/DL-ZJU/Lecture4 提升CNN的准确性.md",
+      "title": "Lecture4 提升CNN的准确性"
+    }
+  ],
+  "images": [
+    "assets/notes/5ceb58b842c6aece8cf8.png",
+    "assets/notes/b9551f1892e7b6143e3f.png",
+    "assets/notes/f2dfbe48b6633887fd63.png",
+    "assets/notes/fbcc62203567e1d8e0df.png"
+  ]
+}
