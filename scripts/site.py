@@ -196,6 +196,11 @@ def await_deployment(commit):
 
 def publish():
     settings = config()['site']
+    local = tomllib.loads((ROOT / 'local.toml').read_text())
+    proxy = local.get('proxy')
+    if proxy:
+        for key in ('HTTPS_PROXY', 'HTTP_PROXY', 'https_proxy', 'http_proxy'):
+            ENV[key] = proxy
     branch = run('git', 'branch', '--show-current', capture=True)
     origin = run('git', 'remote', 'get-url', 'origin', capture=True)
     expected = settings['repository']
@@ -218,7 +223,10 @@ def publish():
         raise ExportError('无法检查待提交内容')
     else:
         print('公开内容没有变化，将检查当前提交的部署状态。', flush=True)
-    run('git', 'push', 'origin', settings['branch'], timeout=180)
+    status('正在推送到 GitHub')
+    output = run('git', 'push', 'origin', settings['branch'], capture=True, timeout=180)
+    if output:
+        print(output, flush=True)
     commit = run('git', 'rev-parse', 'HEAD', capture=True)
     await_deployment(commit)
 
