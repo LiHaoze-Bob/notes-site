@@ -103,8 +103,20 @@ def test_image_embed_dimensions_and_markdown_reference(setup):
     output,manifest,_=export()
     text=(output/'courses/主.md').read_text()
     assert '{ width="240" }' in text
-    assert '[image]: ../assets/notes/' in text
+    assert '![说明](../assets/notes/' in text
     assert len(manifest['images'])==1
+
+
+def test_private_reference_links_and_unused_images(setup):
+    _,note,export=setup
+    note('公开.md','# 公开\n[保留文字][private]\n[私人][]\n[私人]\n`[保留文字][private]`\n\n[private]: 私人.md\n[私人]: 私人.md\n[unused]: missing.png')
+    note('私人.md','SECRET',False)
+    output,manifest,exporter=export()
+    text=(output/'courses/公开.md').read_text()
+    assert '保留文字\n私人\n私人' in text
+    assert '`[保留文字][private]`' in text
+    assert '私人.md' not in text and 'missing.png' not in text
+    assert len(exporter.warnings)==3 and not manifest['images']
 
 
 def test_bad_publish_and_empty_notes(setup):

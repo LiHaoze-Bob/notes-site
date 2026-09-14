@@ -340,16 +340,26 @@ class Exporter:
             rendered.append(protected.put(result))
             cursor = i
         text = ''.join(rendered) + text[cursor:]
-        # 引用式图片/链接保留引用形式，对定义中的地址执行同样的范围检查。
+        # 引用式链接在使用处转换；未公开目标只保留文字，未使用的定义不复制附件。
+        reference_env = {}
+        MarkdownIt().parse(text, reference_env)
+        references = reference_env.get('references', {})
+        rows = text.splitlines(keepends=True)
+        for definition in references.values():
+            for index in range(*definition['map']):
+                rows[index] = '\n'
+        text = ''.join(rows)
         def reference(match):
-            name, value = match.groups()
-            value = value.strip().removeprefix('<').removesuffix('>')
-            is_image = bool(re.search(r'!\[[^\]]*\]\[' + re.escape(name) + r'\]', text, re.I))
-            result = self.local_link(value, name, is_image, note)
-            if not result.endswith(')'):
-                raise ExportError(f'{note.title}：未公开笔记的引用式链接请改为普通链接')
-            return '[' + name + ']: ' + result[result.index('](')+2:-1]
-        text = re.sub(r'^ {0,3}\[([^\]^]+)\]:\s*(.+)$', reference, text, flags=re.M)
+            embedded, label, identifier = match.groups()
+            key = re.sub(r'\s+', ' ', identifier or label).strip().upper()
+            definition = references.get(key)
+            if definition is None:
+                return match[0]
+            result = self.local_link(definition['href'], label, bool(embedded), note)
+            if definition.get('title') and result.endswith(')'):
+                result = result[:-1] + ' ' + json.dumps(definition['title'], ensure_ascii=False) + ')'
+            return protected.put(result)
+        text = re.sub(r'(!?)\[([^\]\n]+)\](?:\[([^\]\n]*)\])?', reference, text)
         text = convert_callouts(text)
         # 显式锚点使中文标题的链接不依赖生成器的默认 slug 算法。
         seen = {}
