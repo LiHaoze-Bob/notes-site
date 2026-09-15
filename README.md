@@ -68,11 +68,11 @@ cp local.example.toml local.toml
 完整使用 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 官方 gem 的布局、样式和脚本，包括首页文章列表、搜索、阅读目录、图片放大、代码复制、明暗切换和 RSS。侧栏依次为 **HOME / COURSE / READING / TECH / ABOUT**。
 
 - `_config.yml`：站名、简介、头像、网址和 Chirpy 功能设置。
-- `site-template/_tabs/`：栏目标题、图标、顺序与 About 正文。Course 自动生成可折叠的课程树；Tech 只显示「技术积累 / Tools」一层分组，Reading 只显示「Reading / Paper」一层分组，各组内扁平罗列所有公开文章。
+- `site-template/_tabs/`：栏目标题、图标、顺序与 About 正文。Course 自动生成可折叠的课程树；Tech 只显示「技术积累 / Tools」一层分组并扁平罗列文章；Reading 在「Reading / Paper」下保留可展开的深层目录。
 - `site-template/assets/`：头像和本地字体、搜索、目录、图片预览、MathJax 等资源。
 - `site-template/_data/`：社交入口、栏目英文名称，以及静态资源地址。
 
-课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 按原目录层级显示文件夹和笔记；Tech 和 Reading 的栏目首页不继续展示深层文件夹，而是在一级分组下直接列出带文章图标的公开笔记。笔记的原有 URL 和顶部路径导航仍保留完整目录层级。
+课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 按原目录层级显示文件夹和笔记；Tech 的栏目首页不展示深层文件夹，而是在一级分组下直接列出带文章图标的公开笔记；Reading 则保留完整的可折叠目录树和文章图标。笔记的 URL 和顶部路径导航仍保留完整目录层级。
 
 可选属性 `date` 设置文章日期（如 `2026-09-14`）。没有该属性时，已有笔记使用 Git 中首次公开的日期；新笔记使用首次导出到公开快照的时间，并保存在 `docs/publication.json`，后续构建不会改变它。公开的目录 `index.md` 优先作为该目录首页，顶层栏目索引不重复加入首页文章列表。文章页标题下不自动重复正文摘要；只有笔记显式填写 `description` 时才显示简介。
 

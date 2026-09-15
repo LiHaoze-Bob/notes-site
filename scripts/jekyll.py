@@ -169,10 +169,12 @@ def post_date(value) -> str:
         raise ExportError('笔记 date 必须为 ISO 日期或日期时间：' + str(value)) from exc
 
 
-def course_tree(notes: dict, baseurl: str, labels: dict) -> str:
-    """Render public course folders in manifest order (including nav_order)."""
-    courses = {path: note for path, note in notes.items()
-               if path.startswith('courses/') and path != 'courses/index.md'}
+def folder_tree(notes: dict, section: str, baseurl: str, labels: dict,
+                available_pages: set[str] | None = None) -> str:
+    """Render a section's public folder hierarchy in manifest order."""
+    section_prefix = section + '/'
+    section_notes = {path: note for path, note in notes.items()
+                     if path.startswith(section_prefix) and path != section_prefix + 'index.md'}
 
     def link(path: str, title: str) -> str:
         url = baseurl + '/' + page_url(path)
@@ -180,14 +182,19 @@ def course_tree(notes: dict, baseurl: str, labels: dict) -> str:
 
     def children(folder: str, top: bool = False) -> str:
         prefix = folder + '/'
-        below = {path: note for path, note in courses.items() if path.startswith(prefix)}
-        directories = sorted({path[len(prefix):].split('/')[0] for path in below
-                              if '/' in path[len(prefix):]}, key=natural_key)
+        below = {path: note for path, note in section_notes.items() if path.startswith(prefix)}
+        discovered = {path[len(prefix):].split('/')[0] for path in below
+                      if '/' in path[len(prefix):]}
+        configured = [posixpath.basename(path) for path in labels
+                      if posixpath.dirname(path) == folder
+                      and (available_pages is None or path + '/index.md' in available_pages)]
+        directories = list(dict.fromkeys(configured))
+        directories += sorted(discovered.difference(directories), key=natural_key)
         folders = []
         for directory in directories:
             path = prefix + directory
             index = path + '/index.md'
-            title = labels.get(path, courses.get(index, {}).get('title', directory))
+            title = labels.get(path, section_notes.get(index, {}).get('title', directory))
             descendants = [name[len(path) + 1:] for name in below if name.startswith(path + '/')]
             subfolders = len({name.split('/')[0] for name in descendants if '/' in name})
             count = (f'{subfolders} 个子目录，' if subfolders else '') + f'{len(descendants)} 篇笔记'
@@ -223,9 +230,15 @@ def course_tree(notes: dict, baseurl: str, labels: dict) -> str:
             leaves = []
         return ''.join(folders + leaves)
 
-    content = children('courses', top=True) or '<p class="text-muted">暂无公开笔记。</p>'
+    content = children(section, top=True) or '<p class="text-muted">暂无公开笔记。</p>'
     stylesheet = html.escape(baseurl + '/assets/css/course-tree.css', quote=True)
     return f'<link rel="stylesheet" href="{stylesheet}"><div class="course-tree">{content}</div>'
+
+
+def course_tree(notes: dict, baseurl: str, labels: dict,
+                available_pages: set[str] | None = None) -> str:
+    """Render the Course tab using the shared hierarchical folder view."""
+    return folder_tree(notes, 'courses', baseurl, labels, available_pages)
 
 
 def section_list(notes: dict, section: str, baseurl: str, labels: dict,
@@ -402,7 +415,13 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
             if navigation_mode == 'course-tree':
                 # Keep an authored section introduction, replace generated lists.
                 introduction = content if relative in notes else ''
-                content = introduction + course_tree(notes, settings.get('baseurl', ''), labels)
+                content = introduction + course_tree(
+                    notes, settings.get('baseurl', ''), labels, available_pages)
+            elif navigation_mode == 'section-tree':
+                introduction = content if relative in notes else ''
+                section = relative.split('/')[0]
+                content = introduction + folder_tree(
+                    notes, section, settings.get('baseurl', ''), labels, available_pages)
             elif navigation_mode == 'section-list':
                 introduction = content if relative in notes else ''
                 section = relative.split('/')[0]
