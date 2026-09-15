@@ -21,5 +21,4 @@ path = "60_研究/63_Reading"
 destination = "reading"
 
 [labels]
-"courses/DL-ZJU" = "深度学习"
 "knowledge/tech" = "技术积累"

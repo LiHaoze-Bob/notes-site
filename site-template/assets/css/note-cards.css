@@ -1,0 +1,14 @@
+/* Keep every folder visible, including on narrow screens. */
+#post-list .post-meta > div:first-child {
+  min-width: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+#post-list .post-meta .card-directory {
+  display: inline;
+  margin-left: 1rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

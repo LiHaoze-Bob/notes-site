@@ -7,3 +7,7 @@ Chirpy layouts, styles and JavaScript are provided by the MIT-licensed `jekyll-t
 `_data/locales/en.yml` and `_data/origin/basic.yml` are from Chirpy 7.6.0; changes add the custom tab names and point MathJax to the existing local bundle.
 
 `_includes/post-nav.html` adapts Chirpy 7.6.0's navigation component to link public notes in the same folder by filename instead of site-wide publication date.
+
+`_layouts/home.html` adapts Chirpy 7.6.0's home cards to show section headings and complete public directory paths.
+
+`_includes/topbar.html` adapts Chirpy 7.6.0's top bar to show the exported folder hierarchy in note and directory breadcrumbs, retaining the theme's navigation for other pages.

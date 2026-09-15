@@ -5,7 +5,7 @@ import pytest
 import yaml
 
 from scripts.exporter import Exporter, ExportError, frontmatter
-from scripts.jekyll import custom_callout_styles, render, stage, post_date
+from scripts.jekyll import card_headings, card_directory, custom_callout_styles, render, stage, post_date
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,6 +42,42 @@ print("{{ site.title }}")
 def test_a_different_body_heading_is_not_deleted():
     output = render('# 正文小节', 'reading/一.md', '', '文章标题')
     assert '<h1' in output and '正文小节' in output
+
+
+def test_card_headings_extract_clean_main_sections_only():
+    body = '''# 树
+
+!!! note
+    ## 提示块内的示例
+
+```markdown
+## 代码中的标题
+```
+
+### **基础**概念 {#基础概念}
+#### 深层小节
+### [树的表示](#基础概念)
+### `Expression Trees` & 遍历
+### 基础概念
+### $x^2$
+$$
+x^*
+=
+f(x)
+$$
+### 应用
+### 更多内容
+'''
+    assert card_headings(body, '树') == [
+        '基础概念', '树的表示', 'Expression Trees & 遍历', '应用']
+    assert card_headings('# 树\n\n只有正文', '树') == []
+    assert card_headings('## 概念\n\n ```c\n#include <stdio.h>\n#define SIZE 5\n ```\n\n## 实现', '树') == ['概念', '实现']
+
+
+def test_card_directory_keeps_all_levels_and_configured_labels():
+    assert card_directory('courses/FDS-ZJU/notes/树.md', {}) == ['Course', 'FDS-ZJU', 'notes']
+    assert card_directory('knowledge/tech/主题/index.md', {'knowledge/tech': '技术积累'}) == [
+        'Tech', '技术积累', '主题']
 
 
 def test_custom_callout_keeps_its_obsidian_identifier_and_title():
@@ -99,6 +135,57 @@ def test_invalid_date_blocks_build():
         post_date('yesterday')
 
 
+def test_built_breadcrumbs_link_every_public_parent(tmp_path):
+    from scripts.exporter import page_url
+    from scripts.site import build_snapshot
+
+    vault = tmp_path / 'vault'
+    files = {
+        '课程/课程2/index.md': '---\npublish: true\ntitle: "<课程> & {{ literal }}"\n---\n课程介绍',
+        '课程/课程2/实验 一/示例.md': '---\npublish: true\n---\n正文',
+        '课程/课程2/秘密/未公开.md': '---\npublish: false\n---\nPRIVATE_SENTINEL',
+        '阅读/书/第一章.md': '---\npublish: true\n---\n正文',
+        '技术/工具.md': '---\npublish: true\n---\n正文',
+    }
+    for name, body in files.items():
+        source = vault / name
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(body)
+    cfg = {'site': {'name': 'test'}, 'labels': {'knowledge/tech': '技术积累'}, 'sources': [
+        {'path': '课程', 'destination': 'courses'},
+        {'path': '阅读', 'destination': 'reading'},
+        {'path': '技术', 'destination': 'knowledge/tech'},
+    ]}
+    docs = tmp_path / 'docs'
+    Exporter(vault, cfg, ROOT / 'site-template').export(docs)
+    build_snapshot(docs, tmp_path / 'build')
+    site = tmp_path / 'build/site'
+    cases = [
+        ('courses/课程2/实验 一/示例', ['Home', 'Course', '<课程> & {{ literal }}', '实验 一', '示例'],
+         ['index.md', 'courses/index.md', 'courses/课程2/index.md', 'courses/课程2/实验 一/index.md']),
+        ('courses/课程2/实验 一', ['Home', 'Course', '<课程> & {{ literal }}', '实验 一'],
+         ['index.md', 'courses/index.md', 'courses/课程2/index.md']),
+        ('courses/课程2', ['Home', 'Course', '<课程> & {{ literal }}'],
+         ['index.md', 'courses/index.md']),
+        ('courses', ['Home', 'Course'], ['index.md']),
+        ('reading/书/第一章', ['Home', 'Reading', '书', '第一章'],
+         ['index.md', 'reading/index.md', 'reading/书/index.md']),
+        ('knowledge/tech/工具', ['Home', 'Tech', '技术积累', '工具'],
+         ['index.md', 'knowledge/index.md', 'knowledge/tech/index.md']),
+    ]
+    for path, titles, parents in cases:
+        soup = BeautifulSoup((site / path / 'index.html').read_text(), 'html.parser')
+        crumb = soup.select_one('#breadcrumb')
+        assert [span.get_text(strip=True) for span in crumb.select('span')] == titles
+        expected = ['/notes-site/' if p == 'index.md' else '/notes-site/' + page_url(p) for p in parents]
+        assert [a['href'] for a in crumb.select('a')] == expected
+        assert crumb.select_one('[aria-current="page"]').get_text() == titles[-1]
+        assert '秘密' not in str(crumb)
+    for path, titles in [('index.html', ['Home']), ('about/index.html', ['Home', 'About'])]:
+        soup = BeautifulSoup((site / path).read_text(), 'html.parser')
+        assert [s.get_text(strip=True) for s in soup.select('#breadcrumb span')] == titles
+
+
 def test_course_tree_keeps_hierarchy_order_and_public_links(tmp_path):
     vault = tmp_path / 'vault'
     files = {
@@ -152,14 +239,19 @@ def test_empty_course_tree_has_no_disclosure(tmp_path):
 def test_official_jekyll_build_keeps_literal_code_and_navigation(tmp_path):
     from scripts.site import build_snapshot
     vault = tmp_path / 'vault'
-    (vault / '课程').mkdir(parents=True)
-    (vault / '课程/示例.md').write_text('''---
+    (vault / '课程/FDS-ZJU/notes').mkdir(parents=True)
+    (vault / '课程/无章节.md').write_text('---\npublish: true\n---\n不应出现在卡片的正文')
+    (vault / '课程/FDS-ZJU/notes/示例.md').write_text('''---
 publish: true
 tags: [test]
 ---
 # 示例
 
 正文[^1]。中文$x^2$。
+
+## **基础**概念 {#基础概念}
+
+## `A` & B
 
 ```html
 <img src="literal"> & {{ site.title }} {% include missing.html %}
@@ -169,16 +261,23 @@ tags: [test]
 ''')
     cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
     docs = tmp_path / 'docs'
-    Exporter(vault, cfg, ROOT / 'site-template').export(docs, {'courses/示例.md': '2026-09-14T12:30:00+08:00'})
+    Exporter(vault, cfg, ROOT / 'site-template').export(docs, {'courses/FDS-ZJU/notes/示例.md': '2026-09-14T12:30:00+08:00'})
     pages = build_snapshot(docs, tmp_path / 'build')
     assert pages >= 10
     site = tmp_path / 'build/site'
-    soup = BeautifulSoup((site / 'courses/示例/index.html').read_text(), 'html.parser')
+    soup = BeautifulSoup((site / 'courses/FDS-ZJU/notes/示例/index.html').read_text(), 'html.parser')
     assert [link.get_text(strip=True) for link in soup.select('#sidebar a.nav-link')] == ['HOME', 'COURSE', 'READING', 'TECH', 'ABOUT']
     assert soup.select_one('.rouge-code').get_text().strip() == '<img src="literal"> & {{ site.title }} {% include missing.html %}'
     assert soup.select_one('.code-header button') and soup.find(id='fn:1')
     assert not soup.select_one('img[src="literal"]')
     assert not soup.select_one('.post-desc')
+    home = BeautifulSoup((site / 'index.html').read_text(), 'html.parser')
+    cards = {card.h1.get_text(strip=True): card for card in home.select('#post-list .card')}
+    assert cards['示例'].select_one('.card-text').get_text(strip=True) == '基础概念 · A & B'
+    assert cards['示例'].select_one('.card-directory').get_text(strip=True) == 'Course / FDS-ZJU / notes'
+    assert not cards['无章节'].select_one('.card-text')
+    assert '不应出现在卡片的正文' not in home.select_one('#post-list').get_text()
+    assert home.select_one('link[href$="/note-cards.css"]')
 
 
 def test_built_post_navigation_uses_only_same_folder_in_filename_order(tmp_path):

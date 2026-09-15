@@ -1,1 +1,4 @@
 <link rel="stylesheet" href="{{ '/assets/css/obsidian-callouts.css' | relative_url }}">
+{% if page.layout == 'home' %}
+  <link rel="stylesheet" href="{{ '/assets/css/note-cards.css' | relative_url }}">
+{% endif %}

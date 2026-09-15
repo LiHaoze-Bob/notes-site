@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 from bs4.formatter import HTMLFormatter
 from bs4.dammit import EntitySubstitution
 import markdown
+from markdown_it import MarkdownIt
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name, TextLexer
@@ -227,6 +228,40 @@ def course_tree(notes: dict, baseurl: str, labels: dict) -> str:
     return f'<link rel="stylesheet" href="{stylesheet}"><div class="course-tree">{content}</div>'
 
 
+def card_headings(body: str, title: str, limit: int = 4) -> list[str]:
+    """Use the main section headings, excluding examples inside callouts/code."""
+    headings = []
+    # Display equations can contain a line of '=' that resembles a Setext H1.
+    without_math = re.sub(r'\$\$.*?\$\$|\\\[.*?\\\]', '\n\n', body, flags=re.S)
+    tokens = MarkdownIt().parse(without_math)
+    for i, token in enumerate(tokens):
+        if token.type != 'heading_open' or token.level != 0:
+            continue
+        # Parse each heading on its own: malformed body HTML cannot swallow it,
+        # and CommonMark fences prevent C preprocessor lines becoming headings.
+        content = markdown.markdown('### ' + tokens[i + 1].content, extensions=[
+            'attr_list', 'pymdownx.arithmatex'], extension_configs={
+                'pymdownx.arithmatex': {'generic': True, 'smart_dollar': False}})
+        heading = BeautifulSoup(content, 'html.parser')
+        for formula in heading.select('.arithmatex'):
+            formula.decompose()
+        text = ' '.join(heading.get_text().split())
+        if text and text != title:
+            headings.append((int(token.tag[1]), text))
+    if not headings:
+        return []
+    level = min(level for level, _ in headings)
+    return list(dict.fromkeys(text for depth, text in headings if depth == level))[:limit]
+
+
+def card_directory(source: str, labels: dict) -> list[str]:
+    """Show every public folder from the section down to the note's parent."""
+    parts = posixpath.dirname(source).split('/')
+    sections = {'courses': 'Course', 'reading': 'Reading', 'knowledge': 'Tech'}
+    return [labels.get('/'.join(parts[:i + 1]), sections.get(part, part) if i == 0 else part)
+            for i, part in enumerate(parts)]
+
+
 def folder_navigation(notes: dict) -> dict:
     """Link direct siblings by filename, independently of dates and nav_order."""
     folders = {}
@@ -245,6 +280,23 @@ def folder_navigation(notes: dict) -> dict:
                 )
             navigation[path] = neighbors
     return navigation
+
+
+def breadcrumbs(source: str, notes: dict, tabs: dict, labels: dict) -> list[dict]:
+    """Follow exported folders, omitting an index page's self-link."""
+    folders = source.split('/')[:-1]
+    if source.endswith('/index.md'):
+        folders = folders[:-1]
+    trail = []
+    for depth in range(1, len(folders) + 1):
+        folder = '/'.join(folders[:depth])
+        index = folder + '/index.md'
+        if index in tabs:
+            title = tabs[index][1]['title']
+        else:
+            title = labels.get(folder, notes.get(index, {}).get('title', folders[depth - 1]))
+        trail.append({'title': title, 'url': '/' + page_url(index)})
+    return trail
 
 
 def stage(docs: Path, destination: Path, template: Path, settings: dict, labels: dict):
@@ -289,9 +341,12 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
             section = relative.split('/')[0]
             category = labels.get(folder, {'courses': 'Course', 'reading': 'Reading', 'knowledge': 'Tech'}.get(section, section))
             metadata.update(layout='post', date=timestamp, categories=[category], math=True)
+            metadata.update(card_headings=card_headings(body, note['title']),
+                            card_directory=card_directory(relative, labels))
             metadata.update(navigation[relative])
         else:
             path = destination / Path(relative).with_suffix('.html')
             heading = BeautifulSoup(markdown.markdown(body), 'html.parser').find('h1')
             metadata.update(layout='page', title=heading.get_text() if heading else source.parent.name)
+        metadata['breadcrumbs'] = breadcrumbs(relative, notes, tabs, labels)
         write_page(path, metadata, content)
