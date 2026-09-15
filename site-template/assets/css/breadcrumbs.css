@@ -1,0 +1,35 @@
+/* Keep a note's folder path visible when Chirpy switches to its compact top bar. */
+@media (max-width: 991.98px) {
+  #topbar #breadcrumb.note-breadcrumbs {
+    display: flex;
+    flex: 1 1 auto;
+    order: 1;
+    min-width: 0;
+    margin: 0 0.6rem;
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #topbar #breadcrumb.note-breadcrumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  #topbar #breadcrumb.note-breadcrumbs span {
+    flex: 0 0 auto;
+  }
+
+  #topbar #breadcrumb.note-breadcrumbs ~ #sidebar-trigger {
+    order: 0;
+  }
+
+  #topbar #breadcrumb.note-breadcrumbs ~ #topbar-title {
+    display: none;
+  }
+
+  #topbar #breadcrumb.note-breadcrumbs ~ #search-trigger {
+    order: 2;
+  }
+}

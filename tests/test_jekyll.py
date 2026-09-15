@@ -176,6 +176,8 @@ def test_built_breadcrumbs_link_every_public_parent(tmp_path):
     for path, titles, parents in cases:
         soup = BeautifulSoup((site / path / 'index.html').read_text(), 'html.parser')
         crumb = soup.select_one('#breadcrumb')
+        assert 'note-breadcrumbs' in crumb.get('class', [])
+        assert soup.select_one('link[href$="/breadcrumbs.css"]')
         assert [span.get_text(strip=True) for span in crumb.select('span')] == titles
         expected = ['/notes-site/' if p == 'index.md' else '/notes-site/' + page_url(p) for p in parents]
         assert [a['href'] for a in crumb.select('a')] == expected

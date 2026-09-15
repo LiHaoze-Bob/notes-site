@@ -11,3 +11,5 @@ Chirpy layouts, styles and JavaScript are provided by the MIT-licensed `jekyll-t
 `_layouts/home.html` adapts Chirpy 7.6.0's home cards to show section headings and complete public directory paths.
 
 `_includes/topbar.html` adapts Chirpy 7.6.0's top bar to show the exported folder hierarchy in note and directory breadcrumbs, retaining the theme's navigation for other pages.
+
+`assets/css/breadcrumbs.css` keeps that hierarchy visible in Chirpy's compact top bar.

@@ -80,7 +80,7 @@ cp local.example.toml local.toml
 
 首页卡片自动提取正文最外层级的前 4 个不同章节标题，以「 · 」分隔；忽略代码和提示块内的标题、重复的文章标题及公式，没有章节标题时省略摘要。卡片底部显示完整公开目录（如 `Course / FDS-ZJU / notes`），目录名称沿用 `publish.toml` 的 `labels`，长路径允许换行。
 
-顶部路径导航按笔记所在目录显示完整层级，例如 Home › Course › FDS-ZJU › notes › 算法分析基础，每个上级目录均可点击返回。目录名称优先使用 `labels`，其次使用公开目录首页的标题，最后使用文件夹名；顶层栏目使用侧栏名称。
+顶部路径导航按笔记所在目录显示完整层级，例如 Home › Course › FDS-ZJU › notes › 算法分析基础，每个上级目录均可点击返回；窄窗口中保留该路径并支持横向滚动，不再显示笼统的 Post。目录名称优先使用 `labels`，其次使用公开目录首页的标题，最后使用文件夹名；顶层栏目使用侧栏名称。
 
 `site-template/_includes/post-nav.html` 覆写主题的文章导航组件；Course 树在官方分类卡片样式上补充局部样式，使用浏览器原生折叠控件。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`。当前未配置评论、访问统计与 PWA 离线缓存。
 
