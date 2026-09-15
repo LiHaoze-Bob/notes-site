@@ -109,11 +109,6 @@ class Protected:
 
 
 def convert_callouts(text: str) -> str:
-    types = {'summary': 'abstract', 'tldr': 'abstract', 'intro': 'note', 'todo': 'info',
-             'hint': 'tip', 'important': 'tip', 'check': 'success', 'done': 'success',
-             'help': 'question', 'faq': 'question', 'caution': 'warning', 'attention': 'warning',
-             'fail': 'failure', 'missing': 'failure', 'error': 'danger', 'cite': 'quote'}
-    known = {'note', 'abstract', 'info', 'tip', 'success', 'question', 'warning', 'failure', 'danger', 'bug', 'example', 'quote'}
     lines = text.split('\n')
     result = []
     i = 0
@@ -123,9 +118,9 @@ def convert_callouts(text: str) -> str:
             result.append(lines[i]); i += 1; continue
         indent, kind, fold, title = match.groups()
         output_indent = indent if len(indent.expandtabs(4)) >= 4 else ''
-        kind = types.get(kind.lower(), kind.lower())
-        if kind not in known:
-            kind = 'note'
+        # Obsidian supports custom callout identifiers. Keep the authored type so
+        # aliases and Callout Manager definitions retain their own title/style.
+        kind = kind.lower()
         marker = {'-': '???', '+': '???+'}.get(fold, '!!!')
         header = output_indent + marker + ' ' + kind
         if title:
@@ -155,6 +150,7 @@ class Exporter:
         self.notes: list[Note] = []
         self.warnings: list[str] = []
         self.assets: dict[str, bytes] = {}
+        self.callouts = self.custom_callouts()
         self.roots: list[tuple[Path, str]] = []
         for item in config['sources']:
             source = Path(item['path'])
@@ -165,6 +161,42 @@ class Exporter:
             if path.is_symlink() or not path.resolve().is_relative_to(self.vault):
                 raise ExportError('源目录不能使用指向外部的符号链接')
             self.roots.append((path.resolve(), destination))
+
+    def custom_callouts(self) -> dict:
+        """Read presentation-only custom callouts from Obsidian Callout Manager."""
+        path = self.vault / '.obsidian/plugins/callout-manager/data.json'
+        if not path.is_file():
+            return {}
+        try:
+            callouts = json.loads(path.read_text()).get('callouts', {})
+            custom = callouts.get('custom', [])
+            settings = callouts.get('settings', {})
+        except (OSError, json.JSONDecodeError, AttributeError):
+            return {}
+        result = {}
+        for value in custom:
+            kind = str(value).lower()
+            if not re.fullmatch(r'[\w-]+', kind):
+                continue
+            definition = {}
+            rules = settings.get(value, settings.get(kind, []))
+            if not isinstance(rules, list):
+                rules = []
+            for rule in rules:
+                if not isinstance(rule, dict) or not isinstance(rule.get('changes'), dict):
+                    continue
+                changes = rule['changes']
+                scheme = rule.get('condition', {}).get('colorScheme') if isinstance(rule.get('condition', {}), dict) else None
+                if isinstance(changes.get('icon'), str):
+                    definition['icon'] = changes['icon']
+                if isinstance(changes.get('color'), str) and scheme in {None, 'light', 'dark'}:
+                    if scheme is None:
+                        definition['light_color'] = changes['color']
+                        definition['dark_color'] = changes['color']
+                    else:
+                        definition[scheme + '_color'] = changes['color']
+            result[kind] = definition
+        return result
 
     def discover(self) -> None:
         destinations = set()
@@ -440,7 +472,8 @@ class Exporter:
         now = datetime.now().astimezone().isoformat(timespec='seconds')
         manifest = {'notes': [{'path': n.destination, 'title': n.title,
                                'published_at': dates.get(n.destination, now)} for n in published],
-                    'images': sorted(self.assets)}
+                    'images': sorted(self.assets),
+                    'callouts': self.callouts}
         (destination / 'publication.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
         return manifest
 

@@ -70,6 +70,26 @@ def test_protect_code_inline_math_and_nested_callout(setup):
     assert '    print("[[literal]]")' in text
 
 
+def test_custom_callout_types_and_manager_settings_are_preserved(setup):
+    source,note,export=setup
+    manager = source.parent / '.obsidian/plugins/callout-manager'
+    manager.mkdir(parents=True)
+    manager.joinpath('data.json').write_text(json.dumps({'callouts': {
+        'custom': ['intro', 'theorem'],
+        'settings': {
+            'intro': [{'changes': {'icon': 'lucide-anchor'}},
+                      {'condition': {'colorScheme': 'dark'}, 'changes': {'color': '83, 223, 221'}}],
+        },
+    }}))
+    note('自定义.md', '# 自定义\n> [!intro]\n> 导言\n\n普通正文\n\n> [!word]\n> 单词')
+    output,manifest,_=export()
+    text=(output/'courses/自定义.md').read_text()
+    assert '!!! intro' in text and '!!! word' in text
+    assert '!!! note' not in text
+    assert manifest['callouts']['intro'] == {'icon': 'lucide-anchor', 'dark_color': '83, 223, 221'}
+    assert manifest['callouts']['theorem'] == {}
+
+
 @pytest.mark.parametrize('body,error',[
     ('![](missing.png)','找不到图片'),
     ('[[不存在]]','找不到链接目标'),

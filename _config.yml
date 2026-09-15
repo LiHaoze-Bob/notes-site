@@ -4,7 +4,7 @@ lang: en
 timezone: Asia/Shanghai
 title: sychostar
 tagline: My Obsidian notes
-description: 浙江大学 CS 本科生的课程笔记、技术积累与阅读记录。
+description: 课程笔记、技术积累与阅读记录
 url: https://lihaoze-bob.github.io
 baseurl: /notes-site
 github:

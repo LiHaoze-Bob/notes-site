@@ -5,7 +5,7 @@ import pytest
 import yaml
 
 from scripts.exporter import Exporter, ExportError, frontmatter
-from scripts.jekyll import render, stage, post_date
+from scripts.jekyll import custom_callout_styles, render, stage, post_date
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,7 +33,7 @@ print("{{ site.title }}")
     assert soup.img['src'] == '/assets/notes/image.png' and soup.img['width'] == '240'
     assert 'width="240" />' in output
     assert soup.select_one('blockquote.prompt-warning')
-    assert soup.select_one('details[open] > summary').get_text() == '展开'
+    assert soup.select_one('details.obsidian-callout[data-callout="tip"][open] > summary').get_text() == '展开'
     assert len(soup.select('.arithmatex')) == 2
     assert soup.select_one('.language-python .rouge-code').get_text().strip() == 'print("{{ site.title }}")'
     assert soup.select_one('.language-python .nb').get_text() == 'print'
@@ -42,6 +42,23 @@ print("{{ site.title }}")
 def test_a_different_body_heading_is_not_deleted():
     output = render('# 正文小节', 'reading/一.md', '', '文章标题')
     assert '<h1' in output and '正文小节' in output
+
+
+def test_custom_callout_keeps_its_obsidian_identifier_and_title():
+    output = render('!!! intro\n    导言', 'reading/一.md', '', '文章标题')
+    soup = BeautifulSoup(output, 'html.parser')
+    callout = soup.select_one('blockquote.obsidian-callout[data-callout="intro"].prompt-info')
+    assert callout and callout.strong.get_text() == 'Intro'
+
+
+def test_callout_manager_colors_and_icons_become_safe_css():
+    css = custom_callout_styles({
+        'intro': {'icon': 'lucide-anchor', 'dark_color': '83, 223, 221'},
+        'bad"]': {'light_color': '999, 0, 0'},
+    })
+    assert 'data-callout="intro"' in css and 'rgb(83 223 221 / 14%)' in css
+    assert 'content: "\\f13d"' in css
+    assert 'bad' not in css
 
 
 def test_code_html_stays_literal():
@@ -70,6 +87,7 @@ def test_staging_uses_only_public_notes_and_keeps_paths_and_dates(tmp_path):
     assert metadata['permalink'] == '/courses/文 档/'
     assert metadata['date'] == '2026-09-14T12:30:00+08:00'
     assert metadata['tags'] == ['CNN'] and metadata['render_with_liquid'] is False
+    assert 'description' not in metadata
     assert '{{ site.title }}' in body
     assert '自己整理的索引' in (output / '_tabs/course.html').read_text()
     assert 'PRIVATE_SENTINEL' not in ''.join(p.read_text() for p in output.rglob('*.html'))
@@ -160,3 +178,53 @@ tags: [test]
     assert soup.select_one('.rouge-code').get_text().strip() == '<img src="literal"> & {{ site.title }} {% include missing.html %}'
     assert soup.select_one('.code-header button') and soup.find(id='fn:1')
     assert not soup.select_one('img[src="literal"]')
+    assert not soup.select_one('.post-desc')
+
+
+def test_built_post_navigation_uses_only_same_folder_in_filename_order(tmp_path):
+    from scripts.exporter import page_url
+    from scripts.site import build_snapshot
+
+    vault = tmp_path / 'vault'
+    files = {
+        '课程/index.md': {'publish': True},
+        '课程/课程2/Lecture10.md': {'publish': True, 'date': '2020-01-01', 'nav_order': 1},
+        '课程/课程2/Lecture2 中文.md': {
+            'publish': True, 'date': '2020-01-02', 'title': '<第二讲> & {{ literal }}'},
+        '课程/课程2/Lecture1.md': {'publish': True, 'date': '2020-01-03', 'title': 'Z first'},
+        '课程/课程2/Lecture3.md': {'publish': False},
+        '课程/课程2/实验/Lecture3.md': {'publish': True},
+        '课程/课程20/Lecture3.md': {'publish': True},
+    }
+    for name, metadata in files.items():
+        source = vault / name
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text('---\n' + yaml.safe_dump(metadata, allow_unicode=True) + '---\n正文。')
+    cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
+    docs = tmp_path / 'docs'
+    Exporter(vault, cfg, ROOT / 'site-template').export(docs)
+    build_snapshot(docs, tmp_path / 'build')
+    site = tmp_path / 'build/site'
+
+    def navigation(path):
+        soup = BeautifulSoup((site / path / 'index.html').read_text(), 'html.parser')
+        buttons = soup.select('.post-navigation > *')
+        assert [button['aria-label'] for button in buttons] == ['Older', 'Newer']
+        for button in buttons:
+            if not button.get('href'):
+                assert 'disabled' in button['class'] and button.get_text(strip=True) == '-'
+        return buttons
+
+    siblings = ['Lecture1', 'Lecture2 中文', 'Lecture10']
+    titles = ['Z first', '<第二讲> & {{ literal }}', 'Lecture10']
+    for i, name in enumerate(siblings):
+        buttons = navigation('courses/课程2/' + name)
+        for button, offset in zip(buttons, [-1, 1]):
+            j = i + offset
+            if 0 <= j < len(siblings):
+                assert button['href'] == '/notes-site/' + page_url('courses/课程2/' + siblings[j] + '.md')
+                assert button.get_text(strip=True) == titles[j]
+            else:
+                assert not button.get('href')
+    for path in ['courses/课程2/实验/Lecture3', 'courses/课程20/Lecture3']:
+        assert all(not button.get('href') for button in navigation(path))

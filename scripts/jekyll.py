@@ -1,4 +1,4 @@
-"""Stage public Obsidian exports for the unmodified official Chirpy theme."""
+"""Stage public Obsidian exports for the official Chirpy theme."""
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -24,6 +24,17 @@ import yaml
 from scripts.exporter import ExportError, frontmatter, natural_key, page_url
 
 
+CALLOUT_STYLES = {
+    'tip': {'tip', 'hint', 'important', 'success', 'check', 'done'},
+    'warning': {'question', 'help', 'faq', 'warning', 'caution', 'attention'},
+    'danger': {'failure', 'fail', 'missing', 'danger', 'error', 'bug'},
+}
+
+
+def callout_style(kind: str) -> str:
+    return next((style for style, kinds in CALLOUT_STYLES.items() if kind in kinds), 'info')
+
+
 def write_page(path: Path, metadata: dict, content: str):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text('---\n' + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False)
@@ -46,19 +57,25 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
     if heading and (title is None or heading.get_text() == title):
         anchor = soup.new_tag('span', id=heading.get('id', 'page-title'))
         heading.replace_with(anchor)
-    for prompt in soup.select('div.admonition'):
-        kind = next((c for c in prompt.get('class', []) if c != 'admonition'), 'note')
-        style = {'tip': 'tip', 'success': 'tip', 'warning': 'warning', 'question': 'warning',
-                 'danger': 'danger', 'failure': 'danger', 'bug': 'danger'}.get(kind, 'info')
-        prompt.name = 'blockquote'
-        prompt['class'] = ['prompt-' + style]
-        title = prompt.find(class_='admonition-title', recursive=False)
-        if title:
-            title.attrs.pop('class', None)
-            label = soup.new_tag('strong')
-            label.string = title.get_text()
-            title.clear()
-            title.append(label)
+    for prompt in soup.select('div.admonition, details[class]'):
+        kind = next((c for c in prompt.get('class', []) if c != 'admonition'), 'note').lower()
+        style = callout_style(kind)
+        prompt['data-callout'] = kind
+        if prompt.name == 'div':
+            prompt.name = 'blockquote'
+            prompt['class'] = ['prompt-' + style, 'obsidian-callout']
+            title = prompt.find(class_='admonition-title', recursive=False)
+            if title:
+                title.attrs.pop('class', None)
+                label = soup.new_tag('strong')
+                label.string = title.get_text()
+                title.clear()
+                title.append(label)
+        else:
+            prompt['class'] = ['obsidian-callout', 'prompt-' + style]
+            title = prompt.find('summary', recursive=False)
+            if title:
+                title['class'] = ['callout-title']
     for code in soup.select('pre > code'):
         language = next((c.removeprefix('language-') for c in code.get('class', [])
                          if c.startswith('language-')), 'plaintext')
@@ -101,15 +118,45 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
                                                void_element_close_prefix=' /'))
 
 
-def excerpt(content: str) -> str:
-    soup = BeautifulSoup(content, 'html.parser')
-    for element in soup.select('pre, code, .arithmatex, h1, h2, h3, h4, h5, h6, summary'):
-        element.decompose()
-    for paragraph in soup.select('blockquote > p:first-child'):
-        if paragraph.strong and paragraph.get_text() == paragraph.strong.get_text():
-            paragraph.decompose()
-    text = re.sub(r'\s+', ' ', soup.get_text(' ', strip=True)).strip()
-    return text[:140].rstrip() + ('…' if len(text) > 140 else '')
+CALLOUT_ICONS = {
+    'lucide-anchor': '\\f13d',
+    'lucide-blend': '\\f5fd',
+    'lucide-book-open-check': '\\f518',
+    'lucide-aperture': '\\f140',
+    'lucide-book': '\\f02d',
+    'lucide-book-open': '\\f518',
+    'lucide-apple': '\\f0cb',
+    'lucide-airplay': '\\e163',
+}
+
+
+def custom_callout_styles(callouts: dict) -> str:
+    """Translate Callout Manager colors/icons into safe local CSS."""
+    rules = []
+    for kind, definition in sorted(callouts.items()):
+        if not re.fullmatch(r'[\w-]+', kind) or not isinstance(definition, dict):
+            continue
+        selector = f'.obsidian-callout[data-callout="{kind}"]'
+        for scheme in ('light', 'dark'):
+            color = definition.get(scheme + '_color')
+            if isinstance(color, str) and re.fullmatch(r'\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*', color):
+                values = ' '.join(part.strip() for part in color.split(','))
+                rules.append(
+                    f':root[data-bs-theme="{scheme}"] {selector} '
+                    f'{{ background-color: rgb({values} / 14%) !important; }}'
+                )
+                rules.append(
+                    f':root[data-bs-theme="{scheme}"] blockquote{selector}::before, '
+                    f':root[data-bs-theme="{scheme}"] details{selector} > summary::before '
+                    f'{{ color: rgb({values}) !important; }}'
+                )
+        icon = CALLOUT_ICONS.get(definition.get('icon'))
+        if icon:
+            rules.append(
+                f'blockquote{selector}::before, details{selector} > summary::before '
+                f'{{ content: "{icon}"; transform: none; }}'
+            )
+    return '\n'.join(rules) + ('\n' if rules else '')
 
 
 def post_date(value) -> str:
@@ -180,6 +227,26 @@ def course_tree(notes: dict, baseurl: str, labels: dict) -> str:
     return f'<link rel="stylesheet" href="{stylesheet}"><div class="course-tree">{content}</div>'
 
 
+def folder_navigation(notes: dict) -> dict:
+    """Link direct siblings by filename, independently of dates and nav_order."""
+    folders = {}
+    for path in notes:
+        folders.setdefault(posixpath.dirname(path), []).append(path)
+    navigation = {}
+    for paths in folders.values():
+        paths.sort(key=lambda path: (natural_key(posixpath.basename(path)), path))
+        for i, path in enumerate(paths):
+            neighbors = {}
+            for direction, offset in [('previous', -1), ('next', 1)]:
+                neighbor = paths[i + offset] if 0 <= i + offset < len(paths) else None
+                neighbors['folder_' + direction] = (
+                    {'url': '/' + page_url(neighbor), 'title': notes[neighbor]['title']}
+                    if neighbor else None
+                )
+            navigation[path] = neighbors
+    return navigation
+
+
 def stage(docs: Path, destination: Path, template: Path, settings: dict, labels: dict):
     """Build only from the exported snapshot; never needs the private Vault."""
     shutil.copytree(template, destination, dirs_exist_ok=True)
@@ -188,12 +255,17 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
     shutil.copy2(docs / 'publication.json', destination / 'publication.json')
     (destination / '_config.yml').write_text(yaml.safe_dump(settings, allow_unicode=True, sort_keys=False))
     manifest = json.loads((docs / 'publication.json').read_text())
+    callout_css = destination / 'assets/css/obsidian-callouts.css'
+    callout_css.write_text(callout_css.read_text() + '\n' + custom_callout_styles(manifest.get('callouts', {})))
     notes = {note['path']: note for note in manifest['notes']}
     tabs = {}
     for path in (destination / '_tabs').glob('*.html'):
         metadata, _ = frontmatter(path.read_text())
         source = metadata.pop('source_index')
         tabs[source] = (path, metadata)
+    navigation = folder_navigation({path: note for path, note in notes.items()
+                                    if path not in tabs and path != 'index.md'
+                                    and not path.startswith('assets/')})
     for source in sorted(docs.rglob('*.md')):
         relative = source.relative_to(docs).as_posix()
         if relative == 'index.md' or relative.startswith('assets/'):
@@ -217,7 +289,7 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
             section = relative.split('/')[0]
             category = labels.get(folder, {'courses': 'Course', 'reading': 'Reading', 'knowledge': 'Tech'}.get(section, section))
             metadata.update(layout='post', date=timestamp, categories=[category], math=True)
-            metadata.setdefault('description', excerpt(content))
+            metadata.update(navigation[relative])
         else:
             path = destination / Path(relative).with_suffix('.html')
             heading = BeautifulSoup(markdown.markdown(body), 'html.parser').find('h1')

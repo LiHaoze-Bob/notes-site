@@ -1,0 +1,34 @@
+<!-- Chirpy navigation, using filename-ordered siblings from the public snapshot. -->
+
+<nav class="post-navigation d-flex justify-content-between" aria-label="Post Navigation">
+  {% assign previous = site.data.locales[include.lang].post.button.previous %}
+  {% assign next = site.data.locales[include.lang].post.button.next %}
+
+  {% if page.folder_previous.url %}
+    <a
+      href="{{ page.folder_previous.url | relative_url | escape }}"
+      class="btn btn-outline-primary"
+      aria-label="{{ previous }}"
+    >
+      <p>{{ page.folder_previous.title | escape }}</p>
+    </a>
+  {% else %}
+    <div class="btn btn-outline-primary disabled" aria-label="{{ previous }}">
+      <p>-</p>
+    </div>
+  {% endif %}
+
+  {% if page.folder_next.url %}
+    <a
+      href="{{ page.folder_next.url | relative_url | escape }}"
+      class="btn btn-outline-primary"
+      aria-label="{{ next }}"
+    >
+      <p>{{ page.folder_next.title | escape }}</p>
+    </a>
+  {% else %}
+    <div class="btn btn-outline-primary disabled" aria-label="{{ next }}">
+      <p>-</p>
+    </div>
+  {% endif %}
+</nav>

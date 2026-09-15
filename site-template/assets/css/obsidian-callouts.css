@@ -1,0 +1,47 @@
+/* Preserve Obsidian callout semantics while fitting Chirpy's reading layout. */
+details.obsidian-callout {
+  position: relative;
+  margin: 0.5rem 0 1rem;
+  border-radius: 0.5rem;
+  color: var(--prompt-text-color);
+  overflow: hidden;
+}
+
+details.obsidian-callout.prompt-tip { background-color: var(--prompt-tip-bg); }
+details.obsidian-callout.prompt-info { background-color: var(--prompt-info-bg); }
+details.obsidian-callout.prompt-warning { background-color: var(--prompt-warning-bg); }
+details.obsidian-callout.prompt-danger { background-color: var(--prompt-danger-bg); }
+
+details.obsidian-callout > summary {
+  position: relative;
+  display: block;
+  padding: 1rem 3rem;
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+
+details.obsidian-callout > summary::-webkit-details-marker { display: none; }
+
+details.obsidian-callout > summary::before {
+  content: "\f06a";
+  position: absolute;
+  left: 1rem;
+  width: 1rem;
+  text-align: center;
+  font: var(--fa-font-solid);
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+details.obsidian-callout.prompt-tip > summary::before { color: var(--prompt-tip-icon-color); content: "\f0eb"; }
+details.obsidian-callout.prompt-info > summary::before { color: var(--prompt-info-icon-color); }
+details.obsidian-callout.prompt-warning > summary::before { color: var(--prompt-warning-icon-color); }
+details.obsidian-callout.prompt-danger > summary::before { color: var(--prompt-danger-icon-color); content: "\f071"; }
+
+details.obsidian-callout[open] > summary { padding-bottom: 0.5rem; }
+
+details.obsidian-callout > :not(summary) {
+  margin-right: 1rem;
+  margin-left: 3rem;
+}

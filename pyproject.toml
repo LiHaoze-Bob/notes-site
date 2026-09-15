@@ -1,7 +1,7 @@
 [project]
 name = "sychostar-notes-site"
 version = "0.1.0"
-description = "sychostar 的 Obsidian 笔记发布网站"
+description = "sychostar‘s Obsidian notes"
 requires-python = ">=3.12,<3.13"
 dependencies = ["markdown>=3.7", "pymdown-extensions>=10.14", "pygments>=2.18", "pyyaml>=6", "markdown-it-py>=3", "beautifulsoup4>=4.12"]
 

@@ -1,16 +1,48 @@
 ---
+layout: default
 title: About
 icon: fas fa-info-circle
 order: 4
 permalink: /about/
 ---
 
-你好，我是 **sychostar**，浙江大学 CS 本科生。
+<!-- Use the base layout to preserve the README's image links and picture sources. -->
+<article class="px-1">
+  <h1 class="dynamic-title">About</h1>
+  <div class="content" markdown="1">
 
-这里记录我的课程学习、阅读和技术积累。
+<a href="https://www.last.fm/user/sychostar7">
+  <img
+    align="right"
+    src="https://nowplaying-beryl.vercel.app/api/now-playing?user=sychostar7&amp;width=420&amp;cover=cd&amp;spin=always&amp;spin_speed=8&amp;v=da4f80e"
+    width="420"
+    alt="Now Playing"
+  />
+</a>
 
-- **Course**：按课程整理的学习笔记。
-- **Reading**：阅读记录与思考。
-- **Tech**：技术学习与实践。
+### <img width="220" height="25" src="https://glitch-art.vercel.app/api/simple?word=Hi%20I%27m%20sychostar&amp;font=Doto" alt="Hi I'm sychostar" /> 👋
 
-[GitHub · LiHaoze-Bob](https://github.com/LiHaoze-Bob)
+A CS student at Zhejiang University.
+
+Exploring deep learning, AI agents, and whatever sparks my curiosity.
+
+<br clear="both">
+
+<picture>
+  <source
+    media="(prefers-color-scheme: dark)"
+    srcset="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake-dark.svg"
+  />
+  <source
+    media="(prefers-color-scheme: light)"
+    srcset="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake.svg"
+  />
+  <img
+    width="100%"
+    alt="LiHaoze-Bob contribution snake"
+    src="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake.svg"
+  />
+</picture>
+
+  </div>
+</article>
