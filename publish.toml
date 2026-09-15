@@ -9,16 +9,25 @@ path = "30_课程"
 destination = "courses"
 
 [[sources]]
-path = "40_知识库"
-destination = "knowledge"
-
-[[sources]]
 path = "60_研究/62_技术积累"
 destination = "knowledge/tech"
 
 [[sources]]
+path = "50_资源/53_Tools"
+destination = "knowledge/tools"
+
+[[sources]]
 path = "60_研究/63_Reading"
-destination = "reading"
+destination = "reading/reading"
+
+[[sources]]
+path = "60_研究/61_Paper"
+destination = "reading/paper"
 
 [labels]
+knowledge = "Tech"
 "knowledge/tech" = "技术积累"
+"knowledge/tools" = "Tools"
+reading = "Reading"
+"reading/reading" = "Reading"
+"reading/paper" = "Paper"

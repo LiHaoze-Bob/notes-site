@@ -35,6 +35,52 @@ def test_only_explicit_true_and_removal(setup):
     assert not (output/'courses/公开.md').exists()
 
 
+def test_tech_and_reading_sources_are_grouped_under_their_tabs(tmp_path):
+    vault = tmp_path / 'vault'
+    files = {
+        '技术积累/实践.md': '工程实践',
+        'Tools/工具.md': '工具笔记',
+        'Reading/书.md': '阅读笔记',
+        'Paper/论文.md': '论文笔记',
+    }
+    for name, body in files.items():
+        path = vault / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('---\npublish: true\n---\n' + body)
+    cfg = {
+        'site': {'name': 'test', 'url': 'https://example.com/notes-site/'},
+        'sources': [
+            {'path': '技术积累', 'destination': 'knowledge/tech'},
+            {'path': 'Tools', 'destination': 'knowledge/tools'},
+            {'path': 'Reading', 'destination': 'reading/reading'},
+            {'path': 'Paper', 'destination': 'reading/paper'},
+        ],
+        'labels': {
+            'knowledge': 'Tech',
+            'knowledge/tech': '技术积累',
+            'knowledge/tools': 'Tools',
+            'reading': 'Reading',
+            'reading/reading': 'Reading',
+            'reading/paper': 'Paper',
+        },
+    }
+    output = tmp_path / 'output'
+    manifest = Exporter(vault, cfg, tmp_path / 'template').export(output)
+
+    assert {note['path'] for note in manifest['notes']} == {
+        'knowledge/tech/实践.md',
+        'knowledge/tools/工具.md',
+        'reading/reading/书.md',
+        'reading/paper/论文.md',
+    }
+    assert (output / 'knowledge/index.md').read_text() == (
+        '# Tech\n\n- [技术积累](tech/index.md)\n- [Tools](tools/index.md)\n'
+    )
+    assert (output / 'reading/index.md').read_text() == (
+        '# Reading\n\n- [Paper](paper/index.md)\n- [Reading](reading/index.md)\n'
+    )
+
+
 def test_unicode_paths_images_and_same_names(setup):
     source,note,export=setup
     for folder,data in [('一',b'one'),('二',b'two')]:

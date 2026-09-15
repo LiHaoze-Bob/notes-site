@@ -16,7 +16,7 @@ publish: true
 
 只有 `publish: true` 生效，字符串 `"true"` 会报错，旧的 `published:` 属性不参与发布。正文在 Obsidian 中维护，`docs/` 是自动生成的副本，不要直接编辑。
 
-`publish.toml` 限定课程、知识库、技术积累和阅读四类源目录。`local.toml` 保存本机 Vault 路径并被 Git 忽略。GitHub Actions 只构建已导出的公开内容。
+`publish.toml` 限定课程、技术积累、Tools、Reading 和 Paper 五个源目录。`local.toml` 保存本机 Vault 路径并被 Git 忽略。GitHub Actions 只构建已导出的公开内容。
 
 可选属性 `title` 设置网页标题，`nav_order` 用数字控制同层笔记顺序。目录保留原层级、按数字自然排序；目录名称可在 `publish.toml` 的 `labels` 中设置。
 
@@ -68,11 +68,11 @@ cp local.example.toml local.toml
 完整使用 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 官方 gem 的布局、样式和脚本，包括首页文章列表、搜索、阅读目录、图片放大、代码复制、明暗切换和 RSS。侧栏依次为 **HOME / COURSE / READING / TECH / ABOUT**。
 
 - `_config.yml`：站名、简介、头像、网址和 Chirpy 功能设置。
-- `site-template/_tabs/`：栏目标题、图标、顺序与 About 正文。Course 自动生成可折叠的课程树，Reading、Tech 自动填入公开笔记目录。
+- `site-template/_tabs/`：栏目标题、图标、顺序与 About 正文。Course 自动生成可折叠的课程树；Tech 聚合「技术积累」和 `Tools`，Reading 聚合 `Reading` 和 `Paper`。
 - `site-template/assets/`：头像和本地字体、搜索、目录、图片预览、MathJax 等资源。
 - `site-template/_data/`：社交入口、栏目英文名称，以及静态资源地址。
 
-课程继续使用 `/courses/`，阅读使用 `/reading/`，技术积累使用 `/knowledge/`，已公开笔记的网址保持原样。Course 采用 Chirpy 分类页风格，按原目录层级显示文件夹、笔记与数量，默认展开，点击行内空白或箭头可折叠，点击标题打开对应页面。文件夹按自然顺序排列，笔记保留 `nav_order` 和自然排序；首页由 Chirpy 按日期列出文章。
+课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 采用 Chirpy 分类页风格，按原目录层级显示文件夹、笔记与数量，默认展开，点击行内空白或箭头可折叠，点击标题打开对应页面。文件夹按自然顺序排列，笔记保留 `nav_order` 和自然排序；首页由 Chirpy 按日期列出文章。
 
 可选属性 `date` 设置文章日期（如 `2026-09-14`）。没有该属性时，已有笔记使用 Git 中首次公开的日期；新笔记使用首次导出到公开快照的时间，并保存在 `docs/publication.json`，后续构建不会改变它。公开的目录 `index.md` 优先作为该目录首页，顶层栏目索引不重复加入首页文章列表。文章页标题下不自动重复正文摘要；只有笔记显式填写 `description` 时才显示简介。
 
