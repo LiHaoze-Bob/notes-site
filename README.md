@@ -30,10 +30,15 @@ publish: true
 
 ## 环境与命令
 
-使用 Python 3.12、Zensical 0.0.62，依赖由 `uv.lock` 固定。新机器在项目根目录执行：
+使用 **Jekyll + 官方 Chirpy 7.6.0**，Ruby 依赖由 `Gemfile.lock` 固定。Python 3.12 负责筛选并转换 Obsidian 笔记，依赖由 `uv.lock` 固定。
+
+新机器先安装 Ruby 3.3；macOS 可用 `brew install ruby@3.3`。在项目根目录执行：
 
 ```sh
 uv sync --frozen --python 3.12
+# macOS Homebrew 安装的 Ruby
+export PATH="$(brew --prefix ruby@3.3)/bin:$PATH"
+BUNDLE_PATH=.runtime/bundle bundle install
 cp local.example.toml local.toml
 # 编辑 local.toml，填写本机 Vault 的绝对路径
 .venv/bin/python scripts/site.py check
@@ -41,7 +46,7 @@ cp local.example.toml local.toml
 .venv/bin/python scripts/site.py publish
 ```
 
-发布需要 Git、已登录正确账号的 GitHub CLI。目标固定为 `LiHaoze-Bob/notes-site` 的 `main` 分支；只自动提交 `docs/` 和生成的 `mkdocs.yml`。其他分支、其他 origin、未提交的源码修改会阻止自动发布。
+发布需要 Git、已登录正确账号的 GitHub CLI。目标固定为 `LiHaoze-Bob/notes-site` 的 `main` 分支；只自动提交 `docs/` 中的公开快照。其他分支、其他 origin、未提交的源码修改会阻止自动发布。
 
 `check` 在临时目录导出、构建并校验内部链接与资源。`preview` 同时启动仅绑定本机的预览服务：`http://127.0.0.1:8765/notes-site/`；再次点击会更新内容并复用服务。
 
@@ -55,21 +60,40 @@ cp local.example.toml local.toml
 - **终端可连接、Obsidian 连接超时**：在 `local.toml` 设置 `proxy`，参考示例文件。本机已设置代理，发布时需保持代理应用运行；代理端口变更后同步更新此项。
 - **远端有新提交**：在网站项目中检查差异并合并，不要对 Obsidian Vault 执行这些操作。
 - **部署失败或超时**：查看仓库 Actions；本地状态保存在 `.runtime/status.json`。
-- **控制页无反应**：确认 Shell commands 插件已启用；初次安装后正常重启 Obsidian。
-- **移动项目目录**：更新插件工作目录和三个命令中的绝对路径，并重建虚拟环境。
+- **控制页无反应或 Working directory 报错**：确认 Shell commands 插件已启用，将 Environments 中的 Working directory 留空（默认使用 Vault 目录），再正常重启 Obsidian。三个入口脚本会自行切换到网站项目目录。
+- **移动项目目录**：更新三个命令中的绝对路径，并重建虚拟环境；插件 Working directory 保持留空。
+
+## 网站与主题
+
+完整使用 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 官方 gem 的布局、样式和脚本，包括首页文章列表、搜索、阅读目录、图片放大、代码复制、明暗切换和 RSS。侧栏依次为 **HOME / COURSE / READING / TECH / ABOUT**。
+
+- `_config.yml`：站名、简介、头像、网址和 Chirpy 功能设置。
+- `site-template/_tabs/`：栏目标题、图标、顺序与 About 正文。Course 自动生成可折叠的课程树，Reading、Tech 自动填入公开笔记目录。
+- `site-template/assets/`：头像和本地字体、搜索、目录、图片预览、MathJax 等资源。
+- `site-template/_data/`：社交入口、栏目英文名称，以及静态资源地址。
+
+课程继续使用 `/courses/`，阅读使用 `/reading/`，技术积累使用 `/knowledge/`，已公开笔记的网址保持原样。Course 采用 Chirpy 分类页风格，按原目录层级显示文件夹、笔记与数量，默认展开，点击行内空白或箭头可折叠，点击标题打开对应页面。文件夹按自然顺序排列，笔记保留 `nav_order` 和自然排序；首页由 Chirpy 按日期列出文章。
+
+可选属性 `date` 设置文章日期（如 `2026-09-14`）。没有该属性时，已有笔记使用 Git 中首次公开的日期；新笔记使用首次导出到公开快照的时间，并保存在 `docs/publication.json`，后续构建不会改变它。公开的目录 `index.md` 优先作为该目录首页，顶层栏目索引不重复加入首页文章列表。
+
+主题布局没有本地覆写；Course 树在官方分类卡片样式上补充局部样式，使用浏览器原生折叠控件。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`。当前未配置评论、访问统计与 PWA 离线缓存。
 
 ## 开发
 
 ```sh
 uv run --frozen pytest -q
-uv run --frozen zensical build --clean
-uv run --frozen python scripts/site.py validate
+# 仅用已导出的公开内容构建，与 GitHub Actions 相同，不读取 Vault
+uv run --frozen python scripts/site.py build
 ```
 
-`site-template/` 保存样式、公式资源和基础配置；`scripts/exporter.py` 负责筛选转换；`scripts/site.py` 负责构建发布。修改模板后，先用下列命令检查并生成导出，再提交已审阅的源码与导出变更：
+`scripts/exporter.py` 负责筛选公开内容、转换 Obsidian 语法和复制引用图片；`scripts/jekyll.py` 将公开 Markdown 转为 Chirpy 可直接使用的文章和目录页；`scripts/site.py` 负责构建、检查、预览和发布。临时 Jekyll 源目录位于 `.runtime/`，最终输出位于 `site/`，均不提交。
+
+转换层保留数学公式、嵌套提示块、代码、中文锚点与既有网址。正文禁用 Liquid 展开，因此笔记里的 `{{ ... }}` 或 `{% ... %}` 示例仍作为原文展示。GitHub Actions 无需访问 Obsidian Vault。
+
+修改源码或主题设置后，可检查并重新生成公开快照：
 
 ```sh
 .venv/bin/python -c 'from scripts.site import prepare; prepare(True)'
 ```
 
-第一版不包含评论、访问统计、手机发布或自定义域名。MathJax 3.2.2 随站提供，许可证见 `site-template/assets/vendor/mathjax/LICENSE`；无需外部字体或公式 CDN。
+审阅源码与导出变更后再提交。自动发布入口会拒绝尚未提交的源码修改。

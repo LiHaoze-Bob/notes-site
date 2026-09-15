@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 import hashlib
@@ -10,7 +11,6 @@ import json
 import os
 import posixpath
 import re
-import shutil
 import unicodedata
 import yaml
 from markdown_it import MarkdownIt
@@ -49,6 +49,13 @@ def slug(text: str) -> str:
     text = unicodedata.normalize('NFKC', html.unescape(text)).lower()
     return re.sub(r'[\s-]+', '-', re.sub(r'[^\w\s-]', '', text)).strip('-') or 'section'
 
+
+def page_url(destination: str) -> str:
+    """Match the generator's directory URLs, including published index notes."""
+    if destination == 'index.md':
+        return './'
+    path = destination[:-8] if destination.endswith('/index.md') else destination.removesuffix('.md') + '/'
+    return quote(path, safe='/.-_~')
 
 class Protected:
     def __init__(self, text: str):
@@ -343,7 +350,10 @@ class Exporter:
         # 引用式链接在使用处转换；未公开目标只保留文字，未使用的定义不复制附件。
         reference_env = {}
         MarkdownIt().parse(text, reference_env)
-        references = reference_env.get('references', {})
+        # MarkdownIt's core parser sees footnotes as reference definitions;
+        # leave them for the Markdown footnotes extension at render time.
+        references = {key: value for key, value in reference_env.get('references', {}).items()
+                      if not key.startswith('^')}
         rows = text.splitlines(keepends=True)
         for definition in references.values():
             for index in range(*definition['map']):
@@ -378,18 +388,14 @@ class Exporter:
         text = re.sub(r'^(#{1,6}\s+)(.+)$', heading, text, flags=re.M)
         text = re.sub(r'^[ \t]+$', '', text, flags=re.M)
         text = protected.restore(text)
-        metadata = {k: note.metadata[k] for k in ['description', 'tags', 'source', 'source_author'] if k in note.metadata}
+        metadata = {k: note.metadata[k] for k in ['description', 'tags', 'source', 'source_author', 'date'] if k in note.metadata}
         metadata['title'] = note.title
         return '---\n' + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip() + '\n---\n' + text.strip() + '\n'
 
-    def export(self, destination: Path, config_path: Path) -> dict:
+    def export(self, destination: Path, publication_dates: dict | None = None) -> dict:
         self.discover()
         published = sorted((n for n in self.notes if n.published), key=lambda n: (n.order, natural_key(n.destination)))
         destination.mkdir(parents=True, exist_ok=True)
-        if (self.template / 'assets').exists():
-            shutil.copytree(self.template / 'assets', destination / 'assets', dirs_exist_ok=True)
-        if (self.template / 'overrides').exists():
-            shutil.copytree(self.template / 'overrides', destination.parent / 'site-template/overrides', dirs_exist_ok=True)
         for note in published:
             output = destination / note.destination
             output.parent.mkdir(parents=True, exist_ok=True)
@@ -403,7 +409,7 @@ class Exporter:
             children = [n for n in published if posixpath.dirname(n.destination) == folder]
             below = [n for n in published if n.destination.startswith(folder + '/')]
             directories = sorted({n.destination[len(folder)+1:].split('/')[0] for n in below if '/' in n.destination[len(folder)+1:]}, key=natural_key)
-            title = labels.get(folder, {'courses': 'Courses', 'knowledge': 'Knowledge', 'reading': 'Reading'}.get(folder, folder.split('/')[-1]))
+            title = labels.get(folder, {'courses': '课程笔记', 'knowledge': '知识积累', 'reading': '阅读记录'}.get(folder, folder.split('/')[-1]))
             index = folder + '/index.md'
             if any(n.destination == index for n in published):
                 # 公开的 index.md 本身担任目录首页，不覆盖原笔记。
@@ -425,18 +431,16 @@ class Exporter:
                 items.append({labels.get(child_folder, directory): directory_nav(child_folder)})
             items += [{n.title: n.destination} for n in children if n.destination != index]
             return items
-        nav = [{'Home': 'index.md'}]
-        for folder, label in [('courses', 'Courses'), ('knowledge', 'Knowledge'), ('reading', 'Reading')]:
-            nav.append({label: directory_nav(folder)})
-        links = '\n'.join('- [' + n.title + '](' + quote(n.destination, safe='/') + ')' for n in published[:8])
-        homepage = '''---\nhide:\n  - toc\n---\n<div class="home-intro" markdown>\n<p class="eyebrow">ZJU · COMPUTER SCIENCE</p>\n# sychostar\n课程里的问题，慢慢连成自己的知识。\n</div>\n\n<div class="section-grid">\n<a class="section-card" href="courses/"><strong>Courses</strong><span>课程笔记，按章节整理。</span></a>\n<a class="section-card" href="knowledge/"><strong>Knowledge</strong><span>反复用到的概念与方法。</span></a>\n<a class="section-card" href="reading/"><strong>Reading</strong><span>阅读中的理解与问题。</span></a>\n</div>\n\n## 笔记\n\n''' + (links or '暂无公开笔记。') + '\n\n---\n\n浙江大学 CS 本科生，在 Obsidian 中记录和整理学习所得。这里收录其中已整理公开的部分。\n'
-        (destination / 'index.md').write_text(homepage)
-        base = yaml.safe_load((self.template / 'base.yml').read_text())
-        base['site_name'] = self.config['site']['name']
-        base['site_url'] = self.config['site']['url']
-        base['nav'] = nav
-        config_path.write_text(yaml.safe_dump(base, allow_unicode=True, sort_keys=False, width=120))
-        manifest = {'notes': [{'path': n.destination, 'title': n.title} for n in published], 'images': sorted(self.assets)}
+        sections = [('courses', '课程笔记'), ('reading', '阅读记录'), ('knowledge', '技术积累')]
+        for folder, _ in sections:
+            directory_nav(folder)
+        (destination / 'index.md').write_text('# ' + self.config['site']['name'] + '\n')
+        # 首次导出时间会随公开快照持久化；已有笔记从 Git 首次发布记录恢复。
+        dates = publication_dates or {}
+        now = datetime.now().astimezone().isoformat(timespec='seconds')
+        manifest = {'notes': [{'path': n.destination, 'title': n.title,
+                               'published_at': dates.get(n.destination, now)} for n in published],
+                    'images': sorted(self.assets)}
         (destination / 'publication.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
         return manifest
 

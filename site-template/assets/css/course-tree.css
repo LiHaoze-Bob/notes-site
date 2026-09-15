@@ -1,0 +1,83 @@
+/* Course navigation uses Chirpy's category cards and native disclosure controls. */
+.course-tree summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.course-tree summary::-webkit-details-marker {
+  display: none;
+}
+
+.course-tree summary:focus-visible {
+  outline: 2px solid var(--link-color);
+  outline-offset: -2px;
+}
+
+.course-tree details[open] > .card-header {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.course-tree .course-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.65rem;
+  min-width: 0;
+}
+
+.course-tree .card-header .course-label {
+  margin-left: 0.5rem;
+}
+
+.course-tree a {
+  border-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+.course-tree .category-trigger {
+  flex-shrink: 0;
+}
+
+.course-tree details:not([open]) > summary .fa-angle-down {
+  transform: rotate(-90deg);
+}
+
+.course-tree details[open] > summary .course-folder-closed,
+.course-tree details:not([open]) > summary .course-folder-open,
+.course-tree .course-index-only .course-folder-open {
+  display: none;
+}
+
+.course-tree ul.list-group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.course-tree .categories .course-branch {
+  padding: 0;
+}
+
+.course-tree .course-subfolder {
+  padding: 0.65rem 0.75rem 0.65rem 2rem;
+}
+
+.course-tree .course-branch details > .list-group {
+  margin-left: 1.25rem;
+  border-left: 1px solid var(--categories-border);
+  border-radius: 0;
+}
+
+.course-tree .course-note {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+
+.course-tree .course-note > i {
+  flex-shrink: 0;
+}

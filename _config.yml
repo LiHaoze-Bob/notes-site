@@ -1,0 +1,76 @@
+# Official Chirpy layouts, styles and JavaScript are supplied by the pinned gem.
+theme: jekyll-theme-chirpy
+lang: en
+timezone: Asia/Shanghai
+title: sychostar
+tagline: My Obsidian notes
+description: 浙江大学 CS 本科生的课程笔记、技术积累与阅读记录。
+url: https://lihaoze-bob.github.io
+baseurl: /notes-site
+github:
+  username: LiHaoze-Bob
+social:
+  name: sychostar
+  links:
+    - https://github.com/LiHaoze-Bob
+avatar: /assets/images/avatar.png
+theme_mode:
+toc: true
+comments:
+  provider:
+assets:
+  self_host:
+    enabled: true
+pwa:
+  enabled: false
+paginate: 10
+paginate_path: /page:num/
+plugins:
+  - jekyll-paginate
+  - jekyll-seo-tag
+  - jekyll-archives
+  - jekyll-sitemap
+  - jekyll-include-cache
+collections:
+  tabs:
+    output: true
+    sort_by: order
+defaults:
+  - scope:
+      path: ''
+      type: posts
+    values:
+      layout: post
+      comments: false
+      toc: true
+  - scope:
+      path: ''
+      type: tabs
+    values:
+      layout: page
+kramdown:
+  footnote_backlink: '&#8617;&#xfe0e;'
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
+sass:
+  style: compressed
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  blanklines: false
+jekyll-archives:
+  enabled: [categories, tags]
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    category: /categories/:name/
+    tag: /tags/:name/
+exclude: [README.md, THIRD_PARTY.md]

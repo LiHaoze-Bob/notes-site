@@ -22,9 +22,21 @@ sys.path.insert(0, str(Path(__file__).parent))
 from exporter import Exporter, ExportError
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.jekyll import stage as stage_jekyll
+
 RUNTIME = ROOT / '.runtime'
 STATUS = RUNTIME / 'status.json'
-ENV = dict(os.environ, PATH='/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:' + os.environ.get('PATH', ''))
+ENV = dict(os.environ)
+ENV['PATH'] = ENV.get('PATH', '') + ':/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
+# Obsidian does not inherit the interactive shell's Ruby PATH.
+for ruby_bin in ('/usr/local/opt/ruby@3.3/bin', '/opt/homebrew/opt/ruby@3.3/bin'):
+    if Path(ruby_bin, 'ruby').exists():
+        ENV['PATH'] = ruby_bin + ':' + ENV.get('PATH', '')
+        break
+ENV['BUNDLE_GEMFILE'] = str(ROOT / 'Gemfile')
+ENV.setdefault('BUNDLE_PATH', str(RUNTIME / 'bundle'))
+ENV['JEKYLL_ENV'] = 'production'
 
 
 def config():
@@ -93,6 +105,8 @@ def validate(site: Path):
                 destination /= 'index.html'
             if not destination.exists():
                 errors.append(f'{page.relative_to(site)}：缺失资源 {target}')
+            elif path.endswith('/') and destination.is_file() and destination.name != 'index.html':
+                errors.append(f'{page.relative_to(site)}：文件链接不能以斜杠结尾 {target}')
             elif parsed.fragment and element.name == 'a' and destination.suffix == '.html':
                 linked_soup = soups.get(destination)
                 if linked_soup and not linked_soup.find(id=unquote(parsed.fragment)):
@@ -100,6 +114,52 @@ def validate(site: Path):
     if errors:
         raise ExportError('\n'.join(errors[:30]))
     return len(soups)
+
+
+def publication_dates():
+    """Reuse saved first-publication dates, bootstrapping old notes from Git."""
+    manifest_path = ROOT / 'docs/publication.json'
+    if not manifest_path.exists():
+        return {}
+    dates = {}
+    for note in json.loads(manifest_path.read_text())['notes']:
+        value = note.get('published_at')
+        if not value:
+            history = run('git', 'log', '--diff-filter=A', '--format=%cI', '--reverse',
+                          '--', 'docs/' + note['path'], capture=True)
+            value = history.splitlines()[0] if history else None
+        if value:
+            dates[note['path']] = value
+    return dates
+
+
+def build_snapshot(docs: Path, work: Path):
+    settings = yaml.safe_load((ROOT / '_config.yml').read_text())
+    if settings['url'] + settings.get('baseurl', '') + '/' != config()['site']['url']:
+        raise ExportError('_config.yml 中的网址必须与 publish.toml 一致')
+    stage_jekyll(docs, work / 'source', ROOT / 'site-template', settings, config().get('labels', {}))
+    bundle = shutil.which('bundle', path=ENV.get('PATH'))
+    if not bundle:
+        raise ExportError('找不到 bundle，请先安装 Ruby 3.3 和 Gemfile 中的依赖（见 README）')
+    run(bundle, 'exec', 'jekyll', 'build', '--source', str(work / 'source'),
+        '--destination', str(work / 'site'))
+    return validate(work / 'site')
+
+
+def install_snapshot(source: Path):
+    if (ROOT / 'site').exists():
+        shutil.rmtree(ROOT / 'site')
+    shutil.move(str(source), ROOT / 'site')
+
+
+def build():
+    """CI builds the committed public snapshot, without local.toml or the Vault."""
+    RUNTIME.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='jekyll-', dir=RUNTIME) as temporary:
+        work = Path(temporary)
+        pages = build_snapshot(ROOT / 'docs', work)
+        install_snapshot(work / 'site')
+    print(f'Jekyll 构建与链接校验通过：{pages} 个页面。', flush=True)
 
 
 def prepare(write_export=False):
@@ -111,25 +171,17 @@ def prepare(write_export=False):
     with tempfile.TemporaryDirectory(prefix='build-', dir=RUNTIME) as temporary:
         stage = Path(temporary)
         exporter = Exporter(Path(local['vault']), config(), ROOT / 'site-template')
-        manifest = exporter.export(stage / 'docs', stage / 'mkdocs.public.yml')
-        public_config = (stage / 'mkdocs.public.yml').read_text()
-        settings = yaml.safe_load(public_config)
-        settings.update(docs_dir='docs', site_dir='site')
-        (stage / 'mkdocs.yml').write_text(yaml.safe_dump(settings, allow_unicode=True, sort_keys=False))
+        manifest = exporter.export(stage / 'docs', publication_dates())
         status('正在构建网站', notes=len(manifest['notes']), images=len(manifest['images']))
-        run(str(ROOT / '.venv/bin/zensical'), 'build', '--clean', '--config-file', str(stage / 'mkdocs.yml'), cwd=stage)
-        pages = validate(stage / 'site')
+        pages = build_snapshot(stage / 'docs', stage)
         # 所有检查通过后才替换站点快照，失败不会影响已有导出或线上页面。
-        if (ROOT / 'site').exists():
-            shutil.rmtree(ROOT / 'site')
-        shutil.move(str(stage / 'site'), ROOT / 'site')
+        install_snapshot(stage / 'site')
         if write_export:
             if (ROOT / 'docs').is_symlink():
                 raise ExportError('docs 不能是符号链接')
             if (ROOT / 'docs').exists():
                 shutil.rmtree(ROOT / 'docs')
             shutil.move(str(stage / 'docs'), ROOT / 'docs')
-            (ROOT / 'mkdocs.yml').write_text(public_config)
         for warning in exporter.warnings:
             print('提示：' + warning, flush=True)
         print(f'检查通过：{len(manifest["notes"])} 篇笔记、{len(manifest["images"])} 张图片、{pages} 个页面。', flush=True)
@@ -206,16 +258,16 @@ def publish():
     expected = settings['repository']
     if branch != settings['branch'] or origin.removesuffix('.git') not in {'https://github.com/' + expected, 'git@github.com:' + expected, 'ssh://git@ssh.github.com:443/' + expected}:
         raise ExportError('当前分支或 origin 与发布配置不一致，停止推送')
-    # 只允许自动提交导出目录与生成的导航。其他源码变更交给明确的开发提交。
+    # 只允许自动提交公开快照。其他源码变更交给明确的开发提交。
     changes = run('git', 'status', '--porcelain=v1', '-z', capture=True)
     for record in changes.split('\0'):
         if not record:
             continue
         path = record[3:] if len(record) >= 3 else record
-        if not (path.startswith('docs/') or path == 'mkdocs.yml'):
+        if not path.startswith('docs/'):
             raise ExportError('网站源码有未提交修改，请先处理后再发布：' + path)
     prepare(write_export=True)
-    run('git', 'add', '-A', '--', 'docs', 'mkdocs.yml')
+    run('git', 'add', '-A', '--', 'docs')
     diff = subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=ROOT)
     if diff.returncode == 1:
         run('git', 'commit', '-m', '更新公开笔记')
@@ -233,7 +285,7 @@ def publish():
 
 def main():
     parser = argparse.ArgumentParser(description='sychostar 笔记网站发布工具')
-    parser.add_argument('command', choices=['check', 'preview', 'publish', 'validate'])
+    parser.add_argument('command', choices=['check', 'preview', 'publish', 'build', 'validate'])
     parser.add_argument('--from-obsidian', action='store_true')
     args = parser.parse_args()
     if args.command == 'validate':
@@ -249,6 +301,9 @@ def main():
         if args.command == 'check':
             prepare()
             status('检查通过')
+        elif args.command == 'build':
+            build()
+            status('构建通过')
         elif args.command == 'preview':
             preview()
         else:

@@ -16,7 +16,7 @@ def setup(tmp_path):
     def export():
         destination=tmp_path/('output-'+str(len(list(tmp_path.glob('output-*')))))
         exporter=Exporter(vault,cfg,template)
-        manifest=exporter.export(destination,tmp_path/'mkdocs.yml')
+        manifest=exporter.export(destination)
         return destination,manifest,exporter
     return source,note,export
 
