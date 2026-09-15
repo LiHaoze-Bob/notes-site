@@ -77,8 +77,39 @@ def test_tech_and_reading_sources_are_grouped_under_their_tabs(tmp_path):
         '# Tech\n\n- [技术积累](tech/index.md)\n- [Tools](tools/index.md)\n'
     )
     assert (output / 'reading/index.md').read_text() == (
-        '# Reading\n\n- [Paper](paper/index.md)\n- [Reading](reading/index.md)\n'
+        '# Reading\n\n- [Reading](reading/index.md)\n- [Paper](paper/index.md)\n'
     )
+
+
+def test_configured_empty_source_groups_keep_their_index_pages(tmp_path):
+    vault = tmp_path / 'vault'
+    for name in ['技术积累', 'Tools', 'Reading', 'Paper']:
+        (vault / name).mkdir(parents=True)
+    cfg = {
+        'site': {'name': 'test', 'url': 'https://example.com/notes-site/'},
+        'sources': [
+            {'path': '技术积累', 'destination': 'knowledge/tech'},
+            {'path': 'Tools', 'destination': 'knowledge/tools'},
+            {'path': 'Reading', 'destination': 'reading/reading'},
+            {'path': 'Paper', 'destination': 'reading/paper'},
+        ],
+        'labels': {
+            'knowledge': 'Tech', 'knowledge/tech': '技术积累',
+            'knowledge/tools': 'Tools', 'reading': 'Reading',
+            'reading/reading': 'Reading', 'reading/paper': 'Paper',
+        },
+    }
+    output = tmp_path / 'output'
+    Exporter(vault, cfg, tmp_path / 'template').export(output)
+
+    assert (output / 'knowledge/index.md').read_text() == (
+        '# Tech\n\n- [技术积累](tech/index.md)\n- [Tools](tools/index.md)\n'
+    )
+    assert (output / 'reading/index.md').read_text() == (
+        '# Reading\n\n- [Reading](reading/index.md)\n- [Paper](paper/index.md)\n'
+    )
+    for path in ['knowledge/tech', 'knowledge/tools', 'reading/reading', 'reading/paper']:
+        assert '暂无公开笔记。' in (output / path / 'index.md').read_text()
 
 
 def test_unicode_paths_images_and_same_names(setup):

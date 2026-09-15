@@ -437,10 +437,18 @@ class Exporter:
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_bytes(data)
         labels = self.config.get('labels', {})
+        configured_destinations = [item['destination'].strip('/') for item in self.config['sources']]
         def directory_nav(folder: str):
             children = [n for n in published if posixpath.dirname(n.destination) == folder]
             below = [n for n in published if n.destination.startswith(folder + '/')]
-            directories = sorted({n.destination[len(folder)+1:].split('/')[0] for n in below if '/' in n.destination[len(folder)+1:]}, key=natural_key)
+            discovered = {n.destination[len(folder)+1:].split('/')[0] for n in below
+                          if '/' in n.destination[len(folder)+1:]}
+            configured = [posixpath.basename(path) for path in configured_destinations
+                          if posixpath.dirname(path) == folder]
+            # Configured source groups stay visible even before their first note is
+            # published. Keep their declared order, then append nested note folders.
+            directories = list(dict.fromkeys(configured))
+            directories += sorted(discovered.difference(directories), key=natural_key)
             title = labels.get(folder, {'courses': '课程笔记', 'knowledge': '知识积累', 'reading': '阅读记录'}.get(folder, folder.split('/')[-1]))
             index = folder + '/index.md'
             if any(n.destination == index for n in published):
@@ -452,7 +460,7 @@ class Exporter:
                     path = folder + '/' + directory
                     entries.append('- [' + labels.get(path, directory) + '](' + quote(directory, safe='') + '/index.md)')
                 entries += ['- [' + n.title + '](' + quote(posixpath.basename(n.destination), safe='') + ')' for n in children]
-                if not below:
+                if not below and not directories:
                     entries.append('暂无公开笔记。')
                 output = destination / index
                 output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,4 +1,4 @@
-/* Course navigation uses Chirpy's category cards and native disclosure controls. */
+/* Section navigation uses Chirpy's category cards and native disclosure controls. */
 .course-tree summary {
   display: flex;
   align-items: center;
@@ -80,4 +80,8 @@
 
 .course-tree .course-note > i {
   flex-shrink: 0;
+}
+
+.course-tree .section-empty {
+  padding-left: 2.9rem;
 }

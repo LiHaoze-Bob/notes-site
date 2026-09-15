@@ -228,6 +228,75 @@ def course_tree(notes: dict, baseurl: str, labels: dict) -> str:
     return f'<link rel="stylesheet" href="{stylesheet}"><div class="course-tree">{content}</div>'
 
 
+def section_list(notes: dict, section: str, baseurl: str, labels: dict,
+                 available_pages: set[str] | None = None) -> str:
+    """Render one group level, then flatten every public article below it."""
+    prefix = section + '/'
+    section_notes = {path: note for path, note in notes.items()
+                     if path.startswith(prefix) and path != prefix + 'index.md'}
+
+    def link(path: str, title: str) -> str:
+        url = baseurl + '/' + page_url(path)
+        return f'<a href="{html.escape(url, quote=True)}">{html.escape(title)}</a>'
+
+    # Direct labels come from the configured source groups, so empty groups are
+    # visible in the intended order. Any unlabelled group is appended naturally.
+    groups = [path for path in labels
+              if posixpath.dirname(path) == section
+              and (available_pages is None or path + '/index.md' in available_pages)]
+    discovered = {
+        prefix + path[len(prefix):].split('/')[0]
+        for path in section_notes
+        if '/' in path[len(prefix):]
+    }
+    groups += sorted(discovered.difference(groups), key=natural_key)
+
+    cards = []
+    for group in groups:
+        index = group + '/index.md'
+        grouped = [(path, note) for path, note in section_notes.items()
+                   if path.startswith(group + '/')]
+        title = labels.get(group, section_notes.get(index, {}).get('title', posixpath.basename(group)))
+        count = len(grouped)
+        rows = [
+            '<li class="list-group-item course-note">'
+            '<i class="far fa-file-lines fa-fw" aria-hidden="true"></i>'
+            f'{link(path, note["title"])}</li>'
+            for path, note in grouped if path != index
+        ]
+        if not rows:
+            rows = ['<li class="list-group-item text-muted section-empty">暂无公开笔记。</li>']
+        row = (
+            '<span class="course-label">'
+            '<i class="far fa-folder-open fa-fw course-folder-open" aria-hidden="true"></i>'
+            '<i class="far fa-folder fa-fw course-folder-closed" aria-hidden="true"></i>'
+            f'{link(index, title)}<span class="text-muted small">{count} 篇笔记</span></span>'
+        )
+        branch = (
+            f'<details open><summary class="card-header">{row}'
+            '<span class="category-trigger" aria-hidden="true">'
+            '<i class="fas fa-fw fa-angle-down"></i></span></summary>'
+            f'<ul class="list-group">{"".join(rows)}</ul></details>'
+        )
+        cards.append(f'<div class="card categories">{branch}</div>')
+
+    direct = [(path, note) for path, note in section_notes.items()
+              if posixpath.dirname(path) == section]
+    if direct:
+        rows = ''.join(
+            '<li class="list-group-item course-note">'
+            '<i class="far fa-file-lines fa-fw" aria-hidden="true"></i>'
+            f'{link(path, note["title"])}</li>'
+            for path, note in direct
+        )
+        cards.append(f'<div class="card categories"><ul class="list-group">{rows}</ul></div>')
+
+    content = ''.join(cards) or '<p class="text-muted">暂无公开笔记。</p>'
+    stylesheet = html.escape(baseurl + '/assets/css/course-tree.css', quote=True)
+    return (f'<link rel="stylesheet" href="{stylesheet}">'
+            f'<div class="course-tree section-list">{content}</div>')
+
+
 def card_headings(body: str, title: str, limit: int = 4) -> list[str]:
     """Use the main section headings, excluding examples inside callouts/code."""
     headings = []
@@ -310,6 +379,7 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
     callout_css = destination / 'assets/css/obsidian-callouts.css'
     callout_css.write_text(callout_css.read_text() + '\n' + custom_callout_styles(manifest.get('callouts', {})))
     notes = {note['path']: note for note in manifest['notes']}
+    available_pages = {path.relative_to(docs).as_posix() for path in docs.rglob('*.md')}
     tabs = {}
     for path in (destination / '_tabs').glob('*.html'):
         metadata, _ = frontmatter(path.read_text())
@@ -328,10 +398,16 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
         if relative in tabs:
             path, tab_metadata = tabs[relative]
             metadata.update(tab_metadata)
-            if metadata.pop('navigation', None) == 'course-tree':
+            navigation_mode = metadata.pop('navigation', None)
+            if navigation_mode == 'course-tree':
                 # Keep an authored section introduction, replace generated lists.
                 introduction = content if relative in notes else ''
                 content = introduction + course_tree(notes, settings.get('baseurl', ''), labels)
+            elif navigation_mode == 'section-list':
+                introduction = content if relative in notes else ''
+                section = relative.split('/')[0]
+                content = introduction + section_list(
+                    notes, section, settings.get('baseurl', ''), labels, available_pages)
         elif relative in notes:
             note = notes[relative]
             timestamp = post_date(metadata.get('date') or note['published_at'])

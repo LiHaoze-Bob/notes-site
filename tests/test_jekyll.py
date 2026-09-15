@@ -5,7 +5,8 @@ import pytest
 import yaml
 
 from scripts.exporter import Exporter, ExportError, frontmatter
-from scripts.jekyll import card_headings, card_directory, custom_callout_styles, render, stage, post_date
+from scripts.jekyll import (card_headings, card_directory, custom_callout_styles,
+                            render, section_list, stage, post_date)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -236,6 +237,34 @@ def test_empty_course_tree_has_no_disclosure(tmp_path):
     soup = BeautifulSoup(course_tree({}, '', {}), 'html.parser')
     assert '暂无公开笔记' in soup.get_text()
     assert not soup.find('details') and not soup.find('a')
+
+
+def test_tech_and_reading_tabs_keep_one_group_level_and_flatten_articles(tmp_path):
+    notes = {
+        'knowledge/tech/直接.md': {'title': '直接技术笔记'},
+        'knowledge/tech/子目录/深入.md': {'title': '深入技术笔记'},
+        'reading/reading/书/第一章.md': {'title': '第一章'},
+        'reading/paper/论文.md': {'title': '论文笔记'},
+    }
+    labels = {
+        'knowledge/tech': '技术积累', 'knowledge/tools': 'Tools',
+        'reading/reading': 'Reading', 'reading/paper': 'Paper',
+    }
+
+    tech = BeautifulSoup(section_list(notes, 'knowledge', '/notes-site', labels), 'html.parser')
+    assert [card.select_one('summary a').get_text() for card in tech.select('.section-list > .categories')] == [
+        '技术积累', 'Tools']
+    assert [row.a.get_text() for row in tech.select('.course-note')] == [
+        '直接技术笔记', '深入技术笔记']
+    assert len(tech.select('.course-note > .fa-file-lines')) == 2
+    assert not tech.select('.course-branch, .course-subfolder')
+    assert '暂无公开笔记' in tech.select('.categories')[1].get_text()
+
+    reading = BeautifulSoup(section_list(notes, 'reading', '/notes-site', labels), 'html.parser')
+    assert [card.select_one('summary a').get_text() for card in reading.select('.section-list > .categories')] == [
+        'Reading', 'Paper']
+    assert [row.a.get_text() for row in reading.select('.course-note')] == ['第一章', '论文笔记']
+    assert not reading.select('.course-branch, .course-subfolder')
 
 
 def test_official_jekyll_build_keeps_literal_code_and_navigation(tmp_path):
