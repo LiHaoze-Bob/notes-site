@@ -450,10 +450,13 @@ class Exporter:
         self.discover()
         published = sorted((n for n in self.notes if n.published), key=lambda n: (n.order, natural_key(n.destination)))
         destination.mkdir(parents=True, exist_ok=True)
+        content_hashes = {}
         for note in published:
             output = destination / note.destination
             output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_text(self.convert(note))
+            content = self.convert(note)
+            output.write_text(content)
+            content_hashes[note.destination] = hashlib.sha256(content.encode()).hexdigest()
         for path, data in self.assets.items():
             output = destination / path
             output.parent.mkdir(parents=True, exist_ok=True)
@@ -497,11 +500,29 @@ class Exporter:
         for folder, _ in sections:
             directory_nav(folder)
         (destination / 'index.md').write_text('# ' + self.config['site']['name'] + '\n')
-        # 首次导出时间会随公开快照持久化；已有笔记从 Git 首次发布记录恢复。
-        dates = publication_dates or {}
+        # 首次发布时间不变；只在已发布笔记的公开内容发生变化时刷新更新时间。
+        history = publication_dates or {}
         now = datetime.now().astimezone().isoformat(timespec='seconds')
-        manifest = {'notes': [{'path': n.destination, 'title': n.title,
-                               'published_at': dates.get(n.destination, now)} for n in published],
+        records = []
+        for note in published:
+            previous = history.get(note.destination, {})
+            # Keep accepting the old path -> date mapping used by callers/tests.
+            if isinstance(previous, str):
+                previous = {'published_at': previous}
+            content_hash = content_hashes[note.destination]
+            record = {
+                'path': note.destination,
+                'title': note.title,
+                'published_at': previous.get('published_at', now),
+                'content_hash': content_hash,
+            }
+            updated_at = previous.get('updated_at')
+            if previous.get('content_hash') and previous['content_hash'] != content_hash:
+                updated_at = now
+            if updated_at:
+                record['updated_at'] = updated_at
+            records.append(record)
+        manifest = {'notes': records,
                     'images': sorted(self.assets),
                     'callouts': self.callouts}
         (destination / 'publication.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')

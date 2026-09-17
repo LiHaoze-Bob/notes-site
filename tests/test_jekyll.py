@@ -1,3 +1,5 @@
+import hashlib
+import json
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -9,6 +11,26 @@ from scripts.jekyll import (card_headings, card_directory, custom_callout_styles
                             folder_tree, render, section_list, stage, post_date)
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_legacy_publication_state_is_bootstrapped_from_snapshot_and_git(tmp_path, monkeypatch):
+    import scripts.site as site
+
+    note = tmp_path / 'docs/courses/示例.md'
+    note.parent.mkdir(parents=True)
+    note.write_text('公开快照')
+    (tmp_path / 'docs/publication.json').write_text(json.dumps({
+        'notes': [{'path': 'courses/示例.md', 'title': '示例'}]
+    }))
+    monkeypatch.setattr(site, 'ROOT', tmp_path)
+    monkeypatch.setattr(site, 'run', lambda *args, **kwargs: (
+        '2026-09-16T09:45:00+08:00\n2026-09-14T12:30:00+08:00'
+    ))
+
+    record = site.publication_records()['courses/示例.md']
+    assert record['published_at'] == '2026-09-14T12:30:00+08:00'
+    assert record['updated_at'] == '2026-09-16T09:45:00+08:00'
+    assert record['content_hash'] == hashlib.sha256(note.read_bytes()).hexdigest()
 
 
 def test_render_preserves_code_math_and_chinese_links():
@@ -163,7 +185,12 @@ def test_staging_uses_only_public_notes_and_keeps_paths_and_dates(tmp_path):
     (vault / '课程/index.md').write_text('---\npublish: true\n---\n# 课程索引\n自己整理的索引。')
     cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
     docs = tmp_path / 'docs'
-    manifest = Exporter(vault, cfg, ROOT / 'site-template').export(docs, {'courses/文 档.md': '2026-09-14T12:30:00+08:00'})
+    manifest = Exporter(vault, cfg, ROOT / 'site-template').export(docs, {
+        'courses/文 档.md': {
+            'published_at': '2026-09-14T12:30:00+08:00',
+            'updated_at': '2026-09-16T09:45:00+08:00',
+        }
+    })
     assert manifest['notes'][1]['published_at'] == '2026-09-14T12:30:00+08:00'
     output = tmp_path / 'jekyll'
     settings = yaml.safe_load((ROOT / '_config.yml').read_text())
@@ -173,6 +200,7 @@ def test_staging_uses_only_public_notes_and_keeps_paths_and_dates(tmp_path):
     metadata, body = frontmatter(posts[0].read_text())
     assert metadata['permalink'] == '/courses/文 档/'
     assert metadata['date'] == '2026-09-14T12:30:00+08:00'
+    assert metadata['last_modified_at'] == '2026-09-16T09:45:00+08:00'
     assert metadata['tags'] == ['CNN'] and metadata['render_with_liquid'] is False
     assert 'description' not in metadata
     assert '{{ site.title }}' in body
@@ -343,7 +371,12 @@ tags: [test]
 ''')
     cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
     docs = tmp_path / 'docs'
-    Exporter(vault, cfg, ROOT / 'site-template').export(docs, {'courses/FDS-ZJU/notes/示例.md': '2026-09-14T12:30:00+08:00'})
+    Exporter(vault, cfg, ROOT / 'site-template').export(docs, {
+        'courses/FDS-ZJU/notes/示例.md': {
+            'published_at': '2026-09-14T12:30:00+08:00',
+            'updated_at': '2026-09-16T09:45:00+08:00',
+        }
+    })
     pages = build_snapshot(docs, tmp_path / 'build')
     assert pages >= 10
     site = tmp_path / 'build/site'
@@ -353,6 +386,9 @@ tags: [test]
     assert soup.select_one('.code-header button') and soup.find(id='fn:1')
     assert not soup.select_one('img[src="literal"]')
     assert not soup.select_one('.post-desc')
+    post_meta = soup.select_one('main .post-meta').get_text(' ', strip=True)
+    assert 'Posted Sep 14, 2026' in post_meta
+    assert 'Updated Sep 16, 2026' in post_meta
     home = BeautifulSoup((site / 'index.html').read_text(), 'html.parser')
     cards = {card.h1.get_text(strip=True): card for card in home.select('#post-list .card')}
     assert cards['示例'].select_one('.card-text').get_text(strip=True) == '基础概念 · A & B'

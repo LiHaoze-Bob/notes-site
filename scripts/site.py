@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -116,19 +117,38 @@ def validate(site: Path):
 
 def publication_dates():
     """Reuse saved first-publication dates, bootstrapping old notes from Git."""
+    return {path: record['published_at'] for path, record in publication_records().items()}
+
+
+def publication_records():
+    """Reuse publication/update state and bootstrap legacy manifests from Git."""
     manifest_path = ROOT / 'docs/publication.json'
     if not manifest_path.exists():
         return {}
-    dates = {}
+    records = {}
     for note in json.loads(manifest_path.read_text())['notes']:
-        value = note.get('published_at')
-        if not value:
-            history = run('git', 'log', '--diff-filter=A', '--format=%cI', '--reverse',
-                          '--', 'docs/' + note['path'], capture=True)
-            value = history.splitlines()[0] if history else None
-        if value:
-            dates[note['path']] = value
-    return dates
+        path = note['path']
+        history = run('git', 'log', '--format=%cI', '--', 'docs/' + path,
+                      capture=True).splitlines()
+        published_at = note.get('published_at') or (history[-1] if history else None)
+        if not published_at:
+            continue
+        record = {'published_at': published_at}
+        updated_at = note.get('updated_at')
+        # Older manifests did not store update times. Multiple commits touching
+        # the public note provide a reliable one-time migration source.
+        if not updated_at and len(history) > 1:
+            updated_at = history[0]
+        if updated_at:
+            record['updated_at'] = updated_at
+        content_hash = note.get('content_hash')
+        snapshot = ROOT / 'docs' / path
+        if not content_hash and snapshot.is_file():
+            content_hash = hashlib.sha256(snapshot.read_bytes()).hexdigest()
+        if content_hash:
+            record['content_hash'] = content_hash
+        records[path] = record
+    return records
 
 
 def build_snapshot(docs: Path, work: Path):
@@ -169,7 +189,7 @@ def prepare(write_export=False):
     with tempfile.TemporaryDirectory(prefix='build-', dir=RUNTIME) as temporary:
         stage = Path(temporary)
         exporter = Exporter(Path(local['vault']), config(), ROOT / 'site-template')
-        manifest = exporter.export(stage / 'docs', publication_dates())
+        manifest = exporter.export(stage / 'docs', publication_records())
         status('正在构建网站', notes=len(manifest['notes']), images=len(manifest['images']))
         pages = build_snapshot(stage / 'docs', stage)
         # 所有检查通过后才替换站点快照，失败不会影响已有导出或线上页面。

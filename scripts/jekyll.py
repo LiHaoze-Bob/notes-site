@@ -457,6 +457,8 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
             section = relative.split('/')[0]
             category = labels.get(folder, {'courses': 'Course', 'reading': 'Reading', 'knowledge': 'Tech'}.get(section, section))
             metadata.update(layout='post', date=timestamp, categories=[category], math=True)
+            if note.get('updated_at'):
+                metadata['last_modified_at'] = post_date(note['updated_at'])
             metadata.update(card_headings=card_headings(body, note['title']),
                             card_directory=card_directory(relative, labels))
             metadata.update(navigation[relative])

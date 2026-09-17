@@ -35,6 +35,45 @@ def test_only_explicit_true_and_removal(setup):
     assert not (output/'courses/公开.md').exists()
 
 
+def test_update_time_changes_only_when_public_content_changes(setup):
+    source, note, export = setup
+    selected = note('公开.md', '# 公开\n第一版')
+    first_output, first, _ = export()
+    first_record = first['notes'][0]
+    assert 'updated_at' not in first_record
+
+    unchanged_output = first_output.parent / 'unchanged'
+    unchanged = Exporter(
+        source.parent, {
+            'site': {'name': 'test', 'url': 'https://example.com/notes-site/'},
+            'sources': [{'path': '课程', 'destination': 'courses'}],
+        }, first_output.parent / 'template'
+    ).export(unchanged_output, {first_record['path']: first_record})
+    assert 'updated_at' not in unchanged['notes'][0]
+
+    selected.write_text(selected.read_text().replace('第一版', '第二版'))
+    changed_output = first_output.parent / 'changed'
+    changed = Exporter(
+        source.parent, {
+            'site': {'name': 'test', 'url': 'https://example.com/notes-site/'},
+            'sources': [{'path': '课程', 'destination': 'courses'}],
+        }, first_output.parent / 'template'
+    ).export(changed_output, {first_record['path']: first_record})
+    changed_record = changed['notes'][0]
+    assert changed_record['published_at'] == first_record['published_at']
+    assert changed_record['updated_at'] >= changed_record['published_at']
+    assert changed_record['content_hash'] != first_record['content_hash']
+
+    rebuilt_output = first_output.parent / 'rebuilt'
+    rebuilt = Exporter(
+        source.parent, {
+            'site': {'name': 'test', 'url': 'https://example.com/notes-site/'},
+            'sources': [{'path': '课程', 'destination': 'courses'}],
+        }, first_output.parent / 'template'
+    ).export(rebuilt_output, {changed_record['path']: changed_record})
+    assert rebuilt['notes'][0]['updated_at'] == changed_record['updated_at']
+
+
 def test_tech_and_reading_sources_are_grouped_under_their_tabs(tmp_path):
     vault = tmp_path / 'vault'
     files = {
