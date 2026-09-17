@@ -3,117 +3,142 @@
     {
       "path": "courses/DL-ZJU/Lecture3 卷积神经网络CNN.md",
       "title": "Lecture3 卷积神经网络CNN",
-      "published_at": "2026-09-14T23:10:32+08:00"
+      "published_at": "2026-09-14T23:10:32+08:00",
+      "content_hash": "6679d49eb3f12fc6130ae9561e326d0cde48604a817397c6916fd1878311fd98",
+      "updated_at": "2026-09-15T11:24:01+08:00"
     },
     {
       "path": "courses/DL-ZJU/Lecture4 提升CNN的准确性.md",
       "title": "Lecture4 提升CNN的准确性",
-      "published_at": "2026-09-14T23:10:32+08:00"
+      "published_at": "2026-09-14T23:10:32+08:00",
+      "content_hash": "7217a47ac70d7a5af016963c40f231df0af505730503f1716668e60ee3094c37",
+      "updated_at": "2026-09-17T12:44:23+08:00"
     },
     {
       "path": "courses/DM-ZJU/ABCs.md",
       "title": "ABCs",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "45a9bd4a46d65bd4797ee8a763db3f830968adec532d7a31cfe1b36b376c91ee"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch1-Logic-and-Proofs.md",
       "title": "Ch1-Logic-and-Proofs",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "5c1c8447332364cb67801a3c3c4bd9f43f7358b82e919bd287d70c8a2f28d1bc"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch2-Basic-Structures.md",
       "title": "Ch2-Basic-Structures",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "478698fb68075a8afb4ec916c8bee2a197dabeef0d0ed3f1bdef4b77dcd3bb6d"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch3-Algorithm.md",
       "title": "Ch3-Algorithm",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "1ba578c195c173148fd0b51323d5977348ff2a07c1cb469f138a1508a4e86d0e"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch5-Induction-and-Recursion.md",
       "title": "Ch5-Induction-and-Recursion",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "6b8f4b8734b7625ee6804e54a67b2d83391018f9c1fb2531fc00d607dae84ca0"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch6&8-Counting.md",
       "title": "Ch6&8-Counting",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "c2d3c0e7bd7fc8704a93e6654e5ed83ca11ad5576c56c99f422d7766e83689f2"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch9-Relations.md",
       "title": "Ch9-Relations",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "74946d08a0f5fefba283952996e3dc359f0e9dd214d793741cb3501def3f9cba"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch10-Graph.md",
       "title": "Ch10-Graph",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "4b4c3db05d835d56843ac7ed1e38c6988040cf1e65d1043f0ab032461daff1a3"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch11-Tree.md",
       "title": "Ch11-Tree",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "e2c3676396bda916861d4aae7ab40a549d8b907732f15a94a5f5e6c47d8af20c"
     },
     {
       "path": "courses/DM-ZJU/resources/Web.md",
       "title": "Web",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "22051b031dd957bd9c0c2c029d146c665a8f3fddb837cf637166dff0344666a7"
     },
     {
       "path": "courses/FDS-ZJU/notes/哈希.md",
       "title": "哈希",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "c7af18521194789c241b6c9ff11d7a376e1575212ea710e928280917b9fbc0de"
     },
     {
       "path": "courses/FDS-ZJU/notes/图.md",
       "title": "图",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "5d3e24d88d9b5eeadd02ccfeca77dae81b8facf7e5e2e2d081868865160a65d0"
     },
     {
       "path": "courses/FDS-ZJU/notes/基础数据结构.md",
       "title": "基础数据结构",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "9b8fed0e915b55273fb12f184277a1ba19e2b8be27899c8e2260a4ff7e5ef4f4"
     },
     {
       "path": "courses/FDS-ZJU/notes/堆.md",
       "title": "堆",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "51cabe0caa0c2c7af9f9749f77e2d5b5407f06c28a495d3f8b492ff1f249d25a"
     },
     {
       "path": "courses/FDS-ZJU/notes/并查集.md",
       "title": "并查集",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "b17f078a4de01982b3bef568e12ceedf134087e27d51f84738121965c6f898d2"
     },
     {
       "path": "courses/FDS-ZJU/notes/排序.md",
       "title": "排序",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "99b59159673d702bfa7f9c08c79297e41177f724a5f81bef05c4b06906102871"
     },
     {
       "path": "courses/FDS-ZJU/notes/树.md",
       "title": "树",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "e99af127b87de1ff1b4a5dedeb4d040f875b9af758c2561f1981dd105369712f"
     },
     {
       "path": "courses/FDS-ZJU/notes/算法分析基础.md",
       "title": "算法分析基础",
-      "published_at": "2026-09-15T11:15:17+08:00"
+      "published_at": "2026-09-15T11:15:17+08:00",
+      "content_hash": "4823ac5ccf22f229d84812acec526c883ce6194ca91ebf9d085b8d7e86ad1985"
     },
     {
       "path": "knowledge/tech/Can I Run AI.md",
       "title": "Can I Run AI",
-      "published_at": "2026-09-15T14:49:36+08:00"
+      "published_at": "2026-09-15T14:49:36+08:00",
+      "content_hash": "5a19fad5330f19ec1e86e925eac8b3f2f6e824f9bdb429821c8f78f3ef173de9"
     },
     {
       "path": "knowledge/tech/What to commit in Github.md",
       "title": "What to commit in Github",
-      "published_at": "2026-09-15T14:49:36+08:00"
+      "published_at": "2026-09-15T14:49:36+08:00",
+      "content_hash": "d2f009fa47b4401c508f93a0d9bf7a1911a05490ccba8e728037cfc2a3268270"
     },
     {
       "path": "knowledge/tools/IPA 自动续签.md",
       "title": "IPA 自动续签",
-      "published_at": "2026-09-16T23:09:35+08:00"
+      "published_at": "2026-09-16T23:09:35+08:00",
+      "content_hash": "d92dba58419a4205835d690561fd61eda47dc891ba5e2bbceeb5b677841abc50"
     }
   ],
   "images": [
