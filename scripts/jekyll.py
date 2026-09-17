@@ -23,6 +23,7 @@ from pygments.util import ClassNotFound
 import yaml
 
 from scripts.exporter import ExportError, frontmatter, natural_key, page_url
+from scripts.tabsdown import TabsdownError, parse as parse_tabsdown, site_markup, transform_blocks
 
 
 CALLOUT_STYLES = {
@@ -44,6 +45,26 @@ def write_page(path: Path, metadata: dict, content: str):
 
 def render(body: str, source: str, baseurl: str, title: str | None = None) -> str:
     """Keep Obsidian syntax, then use Chirpy's native prompt/code markup."""
+    counter = 0
+
+    def expand_tabsdown(text: str) -> str:
+        def expand(block):
+            nonlocal counter
+            counter += 1
+            try:
+                tabs = parse_tabsdown(block.source)
+            except TabsdownError as exc:
+                line = block.start_line + exc.line
+                raise ExportError(f'{source}：Tabsdown 第 {line} 行：{exc}') from exc
+            markup = site_markup(tabs, expand_tabsdown, f'{source}:{counter}')
+            return '\n'.join(block.prefix + line if line else block.prefix.rstrip()
+                             for line in markup.splitlines())
+        try:
+            return transform_blocks(text, expand)
+        except TabsdownError as exc:
+            raise ExportError(f'{source}：Tabsdown 第 {exc.line} 行：{exc}') from exc
+
+    body = expand_tabsdown(body)
     result = markdown.markdown(body, extensions=[
         'admonition', 'attr_list', 'tables', 'footnotes', 'md_in_html',
         'pymdownx.details', 'pymdownx.highlight', 'pymdownx.superfences', 'pymdownx.arithmatex',

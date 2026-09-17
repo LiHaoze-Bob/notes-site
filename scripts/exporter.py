@@ -15,6 +15,8 @@ import unicodedata
 import yaml
 from markdown_it import MarkdownIt
 
+from scripts.tabsdown import TabsdownError, parse as parse_tabsdown, serialize as serialize_tabsdown, transform_blocks
+
 
 class ExportError(Exception):
     pass
@@ -326,10 +328,27 @@ class Exporter:
             anchor = '#' + quote(slug(unquote(parts.fragment)), safe='-')
         return '[' + label + '](' + (self.relative(linked.destination, note) if parts.path else '') + anchor + ')'
 
-    def convert(self, note: Note) -> str:
-        _, body = frontmatter(note.source.read_text())
+    def _convert_fragment(self, note: Note, body: str, seen: dict[str, int]) -> str:
         protected = Protected(body)
-        text = protected.protect(body)
+
+        def tabsdown(block):
+            try:
+                tabs = parse_tabsdown(block.source)
+            except TabsdownError as exc:
+                line = block.start_line + exc.line
+                raise ExportError(f'{note.title}：Tabsdown 第 {line} 行：{exc}') from exc
+            for tab in tabs.tabs:
+                tab.body = self._convert_fragment(note, tab.body, seen).strip()
+            serialized = serialize_tabsdown(tabs)
+            # 一行一个占位符，保留引用前缀，避免后续提示块转换破坏围栏。
+            return '\n'.join(block.prefix + protected.put(line)
+                             for line in serialized.splitlines())
+
+        try:
+            text = transform_blocks(body, tabsdown)
+        except TabsdownError as exc:
+            raise ExportError(f'{note.title}：Tabsdown 第 {exc.line} 行：{exc}') from exc
+        text = protected.protect(text)
         def wiki(match):
             embedded, content = match.groups()
             target, _, alias = content.partition('|')
@@ -404,7 +423,6 @@ class Exporter:
         text = re.sub(r'(!?)\[([^\]\n]+)\](?:\[([^\]\n]*)\])?', reference, text)
         text = convert_callouts(text)
         # 显式锚点使中文标题的链接不依赖生成器的默认 slug 算法。
-        seen = {}
         def heading(match):
             prefix, title = match.groups()
             existing = re.search(r'\{#([\w-]+)\}\s*$', title)
@@ -419,7 +437,11 @@ class Exporter:
             return prefix + title + ' {#' + ident + '}'
         text = re.sub(r'^(#{1,6}\s+)(.+)$', heading, text, flags=re.M)
         text = re.sub(r'^[ \t]+$', '', text, flags=re.M)
-        text = protected.restore(text)
+        return protected.restore(text)
+
+    def convert(self, note: Note) -> str:
+        _, body = frontmatter(note.source.read_text())
+        text = self._convert_fragment(note, body, {})
         metadata = {k: note.metadata[k] for k in ['description', 'tags', 'source', 'source_author', 'date'] if k in note.metadata}
         metadata['title'] = note.title
         return '---\n' + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False).rstrip() + '\n---\n' + text.strip() + '\n'

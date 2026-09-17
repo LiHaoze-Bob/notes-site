@@ -147,6 +147,50 @@ def test_protect_code_inline_math_and_nested_callout(setup):
     assert '    print("[[literal]]")' in text
 
 
+def test_tabsdown_converts_panel_content_and_keeps_nested_blocks(setup):
+    source,note,export=setup
+    (source/'图.png').write_bytes(b'image')
+    note('目标.md', '# 目标\n## 小节\n正文')
+    note('标签页.md', '''# 标签页
+
+~~~~~tabsdown
+config: position=top, layout=one, density=compact, personality=underline
+
+tab: 概念
+[[目标#小节|内部链接]]
+![[图.png|240]]
+
+tab: 例子
+> [!tip] 提示
+> 正文
+
+~~~~tabsdown
+tab: 内一
+内容一
+tab: 内二
+内容二
+~~~~
+~~~~~
+''')
+    output,manifest,_=export()
+    text=(output/'courses/标签页.md').read_text()
+    assert text.count('tabsdown') == 2
+    assert '[内部链接](%E7%9B%AE%E6%A0%87.md#%E5%B0%8F%E8%8A%82)' in text
+    assert '![](../assets/notes/' in text and '{ width="240" }' in text
+    assert '!!! tip "提示"' in text
+    assert len(manifest['images']) == 1
+
+
+def test_invalid_and_dynamic_tabsdown_content_blocks_export(setup):
+    _,note,export=setup
+    note('错误.md', '```tabsdown\ntab: 只有一个\n正文\n```')
+    with pytest.raises(ExportError, match='Tabsdown.*至少需要两个'):
+        export()
+    note('错误.md', '````tabsdown\ntab: 一\n```dataview\nLIST\n```\ntab: 二\n正文\n````')
+    with pytest.raises(ExportError, match='不支持动态内容'):
+        export()
+
+
 def test_custom_callout_types_and_manager_settings_are_preserved(setup):
     source,note,export=setup
     manager = source.parent / '.obsidian/plugins/callout-manager'

@@ -45,6 +45,56 @@ def test_a_different_body_heading_is_not_deleted():
     assert '<h1' in output and '正文小节' in output
 
 
+def test_render_tabsdown_is_accessible_nested_and_has_no_js_fallback():
+    body = '''~~~~~tabsdown
+config: position=left, layout=multi, density=compact, personality=underline, palette=secondary, alignment=equal-width
+
+tab: **概念**
+## 小节
+正文
+
+tab: 例子 <script>
+~~~~tabsdown
+tab: 内一
+内容一
+tab: 内二
+内容二
+~~~~
+~~~~~'''
+    output = render(body, 'courses/标签页.md', '/notes-site')
+    soup = BeautifulSoup(output, 'html.parser')
+    outer = soup.select_one('.tabsdown-site--left.tabsdown-site--multi.tabsdown-site--compact.tabsdown-site--underline.tabsdown-site--secondary.tabsdown-site--equal-width')
+    assert outer
+    assert len(outer.select(':scope > .tabsdown-site__tablist > .tabsdown-site__tab')) == 2
+    assert len(outer.select(':scope > .tabsdown-site__panels > .tabsdown-site__panel')) == 2
+    assert outer.select_one('.tabsdown-site__tab strong').get_text() == '概念'
+    assert not soup.script and '&lt;script&gt;' in output
+    assert [item.get_text(strip=True) for item in outer.select('.tabsdown-site__fallback-label')] == [
+        '概念', '例子 <script>', '内一', '内二']
+    assert soup.select_one('.tabsdown-site__panel h2').get_text() == '小节'
+    assert len(soup.select('.tabsdown-site')) == 2
+
+
+def test_invalid_tabsdown_blocks_rendering():
+    with pytest.raises(ExportError, match='Tabsdown.*至少需要两个'):
+        render('```tabsdown\ntab: 一\n正文\n```', 'courses/错误.md', '')
+
+
+def test_tabsdown_stays_inside_an_admonition_after_export_indentation():
+    body = '''!!! tip "提示"
+    正文
+
+    ```tabsdown
+    tab: A
+    一
+    tab: B
+    二
+    ```'''
+    soup = BeautifulSoup(render(body, 'courses/嵌套.md', ''), 'html.parser')
+    callout = soup.select_one('blockquote.obsidian-callout')
+    assert callout.select_one('.tabsdown-site')
+
+
 def test_card_headings_extract_clean_main_sections_only():
     body = '''# 树
 

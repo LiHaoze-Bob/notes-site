@@ -18,11 +18,9 @@ import webbrowser
 import yaml
 from bs4 import BeautifulSoup
 
-sys.path.insert(0, str(Path(__file__).parent))
-from exporter import Exporter, ExportError
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from scripts.exporter import Exporter, ExportError
 from scripts.jekyll import stage as stage_jekyll
 
 RUNTIME = ROOT / '.runtime'
