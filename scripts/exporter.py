@@ -134,7 +134,9 @@ def convert_callouts(text: str) -> str:
             quote_line = re.match(r'^' + re.escape(indent) + r'>[ \t]?(.*)$', lines[i])
             if quote_line:
                 body.append(quote_line[1]); i += 1
-            elif not lines[i].strip() and i + 1 < len(lines) and re.match(r'^' + re.escape(indent) + r'>', lines[i + 1]):
+            elif (not lines[i].strip() and i + 1 < len(lines)
+                  and re.match(r'^' + re.escape(indent) + r'>', lines[i + 1])
+                  and not re.match(r'^' + re.escape(indent) + r'>[ \t]*\[![\w-]+\]', lines[i + 1])):
                 body.append(''); i += 1
             else:
                 break

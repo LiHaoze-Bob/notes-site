@@ -26,17 +26,6 @@ from scripts.exporter import ExportError, frontmatter, natural_key, page_url
 from scripts.tabsdown import TabsdownError, parse as parse_tabsdown, site_markup, transform_blocks
 
 
-CALLOUT_STYLES = {
-    'tip': {'tip', 'hint', 'important', 'success', 'check', 'done'},
-    'warning': {'question', 'help', 'faq', 'warning', 'caution', 'attention'},
-    'danger': {'failure', 'fail', 'missing', 'danger', 'error', 'bug'},
-}
-
-
-def callout_style(kind: str) -> str:
-    return next((style for style, kinds in CALLOUT_STYLES.items() if kind in kinds), 'info')
-
-
 def write_page(path: Path, metadata: dict, content: str):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text('---\n' + yaml.safe_dump(metadata, allow_unicode=True, sort_keys=False)
@@ -82,20 +71,14 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
         heading.replace_with(anchor)
     for prompt in soup.select('div.admonition, details[class]'):
         kind = next((c for c in prompt.get('class', []) if c != 'admonition'), 'note').lower()
-        style = callout_style(kind)
         prompt['data-callout'] = kind
         if prompt.name == 'div':
-            prompt.name = 'blockquote'
-            prompt['class'] = ['prompt-' + style, 'obsidian-callout']
+            prompt['class'] = ['obsidian-callout']
             title = prompt.find(class_='admonition-title', recursive=False)
             if title:
-                title.attrs.pop('class', None)
-                label = soup.new_tag('strong')
-                label.string = title.get_text()
-                title.clear()
-                title.append(label)
+                title['class'] = ['callout-title']
         else:
-            prompt['class'] = ['obsidian-callout', 'prompt-' + style]
+            prompt['class'] = ['obsidian-callout']
             title = prompt.find('summary', recursive=False)
             if title:
                 title['class'] = ['callout-title']
@@ -143,12 +126,12 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
 
 CALLOUT_ICONS = {
     'lucide-anchor': '\\f13d',
-    'lucide-blend': '\\f5fd',
+    'lucide-blend': '\\f042',
     'lucide-book-open-check': '\\f518',
     'lucide-aperture': '\\f140',
     'lucide-book': '\\f02d',
     'lucide-book-open': '\\f518',
-    'lucide-apple': '\\f0cb',
+    'lucide-apple': '\\f5d1',
     'lucide-airplay': '\\e163',
 }
 
@@ -163,22 +146,17 @@ def custom_callout_styles(callouts: dict) -> str:
         for scheme in ('light', 'dark'):
             color = definition.get(scheme + '_color')
             if isinstance(color, str) and re.fullmatch(r'\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*', color):
-                values = ' '.join(part.strip() for part in color.split(','))
+                channels = [int(part.strip()) for part in color.split(',')]
+                if any(channel > 255 for channel in channels):
+                    continue
+                values = ' '.join(map(str, channels))
                 rules.append(
                     f':root[data-bs-theme="{scheme}"] {selector} '
-                    f'{{ background-color: rgb({values} / 14%) !important; }}'
-                )
-                rules.append(
-                    f':root[data-bs-theme="{scheme}"] blockquote{selector}::before, '
-                    f':root[data-bs-theme="{scheme}"] details{selector} > summary::before '
-                    f'{{ color: rgb({values}) !important; }}'
+                    f'{{ --callout-rgb: {values}; }}'
                 )
         icon = CALLOUT_ICONS.get(definition.get('icon'))
         if icon:
-            rules.append(
-                f'blockquote{selector}::before, details{selector} > summary::before '
-                f'{{ content: "{icon}"; transform: none; }}'
-            )
+            rules.append(f'{selector} {{ --callout-icon: "{icon}"; }}')
     return '\n'.join(rules) + ('\n' if rules else '')
 
 
@@ -429,6 +407,10 @@ def stage(docs: Path, destination: Path, template: Path, settings: dict, labels:
             continue
         metadata, body = frontmatter(source.read_text())
         content = render(body, relative, settings.get('baseurl', ''), metadata.get('title'))
+        if relative in notes and relative.startswith('courses/') and relative.endswith('/index.md'):
+            folder = posixpath.dirname(relative)
+            contents = folder_tree(notes, folder, settings.get('baseurl', ''), labels, available_pages)
+            content += '<section class="course-folder-index" aria-label="课程笔记"><h2>课程笔记</h2>' + contents + '</section>'
         metadata.update(render_with_liquid=False, permalink='/' + unquote(page_url(relative)))
         if relative in tabs:
             path, tab_metadata = tabs[relative]

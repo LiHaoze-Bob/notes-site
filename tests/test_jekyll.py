@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import pytest
 import yaml
 
-from scripts.exporter import Exporter, ExportError, frontmatter
+from scripts.exporter import Exporter, ExportError, convert_callouts, frontmatter
 from scripts.jekyll import (card_headings, card_directory, custom_callout_styles,
                             folder_tree, render, section_list, stage, post_date)
 
@@ -55,7 +55,7 @@ print("{{ site.title }}")
     assert soup.a['href'] == '/notes-site/courses/%E8%AF%BE%E7%A8%8B/%E4%B8%8B%E4%B8%80%E7%AF%87/#小节'
     assert soup.img['src'] == '/assets/notes/image.png' and soup.img['width'] == '240'
     assert 'width="240" />' in output
-    assert soup.select_one('blockquote.prompt-warning')
+    assert soup.select_one('div.obsidian-callout[data-callout="warning"] > .callout-title')
     assert soup.select_one('details.obsidian-callout[data-callout="tip"][open] > summary').get_text() == '展开'
     assert len(soup.select('.arithmatex')) == 2
     assert soup.select_one('.language-python .rouge-code').get_text().strip() == 'print("{{ site.title }}")'
@@ -121,7 +121,7 @@ def test_tabsdown_stays_inside_an_admonition_after_export_indentation():
     二
     ```'''
     soup = BeautifulSoup(render(body, 'courses/嵌套.md', ''), 'html.parser')
-    callout = soup.select_one('blockquote.obsidian-callout')
+    callout = soup.select_one('div.obsidian-callout')
     assert callout.select_one('.tabsdown-site')
 
 
@@ -164,8 +164,18 @@ def test_card_directory_keeps_all_levels_and_configured_labels():
 def test_custom_callout_keeps_its_obsidian_identifier_and_title():
     output = render('!!! intro\n    导言', 'reading/一.md', '', '文章标题')
     soup = BeautifulSoup(output, 'html.parser')
-    callout = soup.select_one('blockquote.obsidian-callout[data-callout="intro"].prompt-info')
-    assert callout and callout.strong.get_text() == 'Intro'
+    callout = soup.select_one('div.obsidian-callout[data-callout="intro"]')
+    assert callout and callout.select_one('.callout-title').get_text() == 'Intro'
+
+
+def test_adjacent_obsidian_callouts_render_as_separate_blocks():
+    source = '> [!question]\n> 一个问题\n\n> [!quote]\n> 一段引用'
+    soup = BeautifulSoup(render(convert_callouts(source), 'courses/例.md', ''), 'html.parser')
+    callouts = soup.select('.obsidian-callout')
+    assert [item['data-callout'] for item in callouts] == ['question', 'quote']
+    assert [item.select_one('.callout-title').get_text() for item in callouts] == ['Question', 'Quote']
+    assert '一段引用' not in callouts[0].get_text()
+    assert '一段引用' in callouts[1].get_text()
 
 
 def test_callout_manager_colors_and_icons_become_safe_css():
@@ -173,8 +183,8 @@ def test_callout_manager_colors_and_icons_become_safe_css():
         'intro': {'icon': 'lucide-anchor', 'dark_color': '83, 223, 221'},
         'bad"]': {'light_color': '999, 0, 0'},
     })
-    assert 'data-callout="intro"' in css and 'rgb(83 223 221 / 14%)' in css
-    assert 'content: "\\f13d"' in css
+    assert 'data-callout="intro"' in css and '--callout-rgb: 83 223 221' in css
+    assert '--callout-icon: "\\f13d"' in css
     assert 'bad' not in css
 
 
@@ -311,6 +321,16 @@ def test_course_tree_keeps_hierarchy_order_and_public_links(tmp_path):
         '<示例> & {{ literal }}', '置顶', 'Lecture2', 'Lecture10']
     assert first.select_one('.course-branch details summary a').get_text() == '实验'
     assert not soup.find('示例') and 'PRIVATE_SENTINEL' not in body and '秘密' not in body
+    index_post = next(
+        post for post in (output / '_posts').glob('*.html')
+        if frontmatter(post.read_text())[0]['permalink'] == '/courses/课程2/'
+    )
+    index_body = frontmatter(index_post.read_text())[1]
+    index = BeautifulSoup(index_body, 'html.parser').select_one('.course-folder-index')
+    assert index and index.h2.get_text() == '课程笔记'
+    assert [a.get_text() for a in index.select('.course-note a')] == [
+        '<示例> & {{ literal }}', '置顶', 'Lecture2', 'Lecture10']
+    assert not index.find(string='PRIVATE_SENTINEL')
     from scripts.exporter import page_url
     links = [a['href'] for a in soup.select('.course-tree a')]
     for note in manifest['notes']:
