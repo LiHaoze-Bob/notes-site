@@ -1,6 +1,19 @@
 {
   "notes": [
     {
+      "path": "courses/CS312-Stanford/index.md",
+      "title": "CS312-Stanford",
+      "published_at": "2026-09-24T16:07:13+08:00",
+      "content_hash": "44140b88bc0b380888978ff0d1bc377a144820a95cf04317e67673c9a4acc54a",
+      "updated_at": "2026-09-24T16:08:06+08:00"
+    },
+    {
+      "path": "courses/CS312-Stanford/Lecture01 Introduction.md",
+      "title": "Lecture01 Introduction",
+      "published_at": "2026-09-24T16:07:13+08:00",
+      "content_hash": "659cd9fde99550f58aa685b1ebd330452ec4d7908054235f88b8ca472a547cc3"
+    },
+    {
       "path": "courses/DL-ZJU/Lecture3 卷积神经网络CNN.md",
       "title": "Lecture3 卷积神经网络CNN",
       "published_at": "2026-09-14T23:10:32+08:00",
@@ -156,6 +169,7 @@
     "assets/notes/3d02587ba6ddf7dad184.png",
     "assets/notes/4128257ff7f72fed28f2.png",
     "assets/notes/422f2c9d6b339c79317c.png",
+    "assets/notes/4aef2bd177620589a138.png",
     "assets/notes/4e7be36dbd399ef5d996.png",
     "assets/notes/4f33f296bdc6a3695339.png",
     "assets/notes/50eb772569f473efb879.png",
@@ -174,6 +188,7 @@
     "assets/notes/89c189d210ac45a77db3.png",
     "assets/notes/939a8c2cfef10bbb095b.png",
     "assets/notes/98d4a8f3f6ebea9f2b4c.png",
+    "assets/notes/9905beb0d0a42e457c9f.png",
     "assets/notes/9beed1d4ebb6030b53d4.png",
     "assets/notes/9bfb31a1934a99adff90.png",
     "assets/notes/aaad989e928996af9d2d.png",
