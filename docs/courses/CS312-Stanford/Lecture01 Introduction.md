@@ -20,7 +20,9 @@ title: Lecture01 Introduction
 !!! question
     深度学习真的不可解释吗？前沿的paper又有哪些research
 
-    [!quote] 
+
+
+!!! quote
     No general theory of deep learning (yet). Intuition and trial-and-error dominate. Teaching (and research) often does not reflect this reality 
 
 

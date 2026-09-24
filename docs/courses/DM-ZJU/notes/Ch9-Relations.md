@@ -6,7 +6,9 @@ title: Ch9-Relations
 !!! quote
     ***Logic demands you face yourself before you can ever fairly face another.***
 
-    [!abstract] 
+
+
+!!! abstract
     本篇笔记主要介绍了二元关系的定义、表示方法及其特殊性质，包括自反性、对称性、传递性等。还介绍了关系的组合、复合、逆关系及其闭包，最后探讨了等价关系和偏序关系的概念及其相关定理。通过这些内容，读者可以深入理解关系在集合论中的重要性及其应用。<small>（由 gpt-4o-mini 生成摘要）</small>
 
 
@@ -111,7 +113,9 @@ $\begin{aligned} A  =\{2,&3,4\},B=\{2,3,4,5,6\} \quad R = \{(x,y) \mid x \in A,\
     $M \odot M \leq M$
     ==原理：实际上，$M$的平方即是在寻找路径长度为2的关系==
 
-    [!caution]
+
+
+!!! caution
 
     Is a relation $R$ is reflexive if it is symmetric and transitive?
 
@@ -125,7 +129,9 @@ $\begin{aligned} A  =\{2,&3,4\},B=\{2,3,4,5,6\} \quad R = \{(x,y) \mid x \in A,\
 
     ==Incorrect==. Because **it cannot be guaranteed that for all $a \in S$, there exists a $b$ such that $(a,b)\in R$**. Therefore, there might exist such an $a\in R$ for which there is no relation concerning $a$."
 
-    [!question] 传递关系序列
+
+
+!!! question "传递关系序列"
 
 
     $$T_n = \sum_{k=1}^n S(n, k) \cdot P(k)$$
@@ -286,7 +292,9 @@ $$S = \bigcap \{ T \mid T \supseteq R \land P(T) \}$$
 
     ![](../../../assets/notes/390011c95c1baea7d43a.png)
 
-    [!corollary]
+
+
+!!! corollary
 
     $R = R \cup R^{-1}$ 当且仅当 $R$ 是对称关系。
 
@@ -309,7 +317,9 @@ $$S = \bigcap \{ T \mid T \supseteq R \land P(T) \}$$
 
     ![](../../../assets/notes/20ddae621e3ba084d548.png)
 
-    [!Theorem]
+
+
+!!! theorem
 
     The **传递闭包(transitive closure)** of a relation $R$ is $t(R) = R^\ast$.
 
@@ -331,7 +341,9 @@ $$S = \bigcap \{ T \mid T \supseteq R \land P(T) \}$$
 
     实际上，通过 $R^\ast = \displaystyle{\bigcup_{i=1}^n R^i}$ 即可计算，因为根据鸽笼原理可以证明，长度 $>n$ 的环至少有一个环。
 
-    [!algorithm]
+
+
+!!! algorithm
 
     ##### Floyd-Warshall 算法
     ![](../../../assets/notes/89c189d210ac45a77db3.png)

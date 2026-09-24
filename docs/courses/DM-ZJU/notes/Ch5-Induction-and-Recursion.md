@@ -39,7 +39,9 @@ $P(n_0) \land \forall k\ge n_0 (P(k)\rightarrow P(k+1)) \rightarrow \forall n\ge
 !!! example "Proofs using the well-ordering property"
     Use the well-ordering property to prove the division algorithm. The division algorithm states >that if $a$ is an integer and $d$ is a positive integer, then there are unique integers $q$ and $r$, with $0\le r<d$ such that $a = dq + r$.
 
-    [!answer]-  Answer
+
+
+??? answer "Answer"
      完整的证明思路：
     第一部分：存在性 (Existence)
 

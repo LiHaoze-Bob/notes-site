@@ -11,7 +11,8 @@
       "path": "courses/CS312-Stanford/Lecture01 Introduction.md",
       "title": "Lecture01 Introduction",
       "published_at": "2026-09-24T16:07:13+08:00",
-      "content_hash": "659cd9fde99550f58aa685b1ebd330452ec4d7908054235f88b8ca472a547cc3"
+      "content_hash": "05412ab2fb25e21eb9e4984528d407a443e0db35c5a8940272fd77e837de1041",
+      "updated_at": "2026-09-24T16:26:21+08:00"
     },
     {
       "path": "courses/DL-ZJU/Lecture3 卷积神经网络CNN.md",
@@ -43,7 +44,8 @@
       "path": "courses/DM-ZJU/notes/Ch2-Basic-Structures.md",
       "title": "Ch2-Basic-Structures",
       "published_at": "2026-09-15T11:15:17+08:00",
-      "content_hash": "478698fb68075a8afb4ec916c8bee2a197dabeef0d0ed3f1bdef4b77dcd3bb6d"
+      "content_hash": "b8972f48eaf306bb566857d08dceea0f34c8ab760b30532e7d1cefd24b897412",
+      "updated_at": "2026-09-24T16:26:21+08:00"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch3-Algorithm.md",
@@ -55,7 +57,8 @@
       "path": "courses/DM-ZJU/notes/Ch5-Induction-and-Recursion.md",
       "title": "Ch5-Induction-and-Recursion",
       "published_at": "2026-09-15T11:15:17+08:00",
-      "content_hash": "6b8f4b8734b7625ee6804e54a67b2d83391018f9c1fb2531fc00d607dae84ca0"
+      "content_hash": "5cbdf85f042e00609ce48222cfe5cd021edaa78e24bfeab6da22766ba60c4c3d",
+      "updated_at": "2026-09-24T16:26:21+08:00"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch6&8-Counting.md",
@@ -67,7 +70,8 @@
       "path": "courses/DM-ZJU/notes/Ch9-Relations.md",
       "title": "Ch9-Relations",
       "published_at": "2026-09-15T11:15:17+08:00",
-      "content_hash": "74946d08a0f5fefba283952996e3dc359f0e9dd214d793741cb3501def3f9cba"
+      "content_hash": "2666e560512639bc704e92f84a5a4b619fb937d610c7cc954353e87f057341d1",
+      "updated_at": "2026-09-24T16:26:21+08:00"
     },
     {
       "path": "courses/DM-ZJU/notes/Ch10-Graph.md",
@@ -97,7 +101,8 @@
       "path": "courses/FDS-ZJU/notes/图.md",
       "title": "图",
       "published_at": "2026-09-15T11:15:17+08:00",
-      "content_hash": "5d3e24d88d9b5eeadd02ccfeca77dae81b8facf7e5e2e2d081868865160a65d0"
+      "content_hash": "52ce76ef42a0fb3273f6f4d14ed59d255bbe9f6827f9e320ae3da9b72e92717b",
+      "updated_at": "2026-09-24T16:26:21+08:00"
     },
     {
       "path": "courses/FDS-ZJU/notes/基础数据结构.md",
@@ -127,7 +132,8 @@
       "path": "courses/FDS-ZJU/notes/树.md",
       "title": "树",
       "published_at": "2026-09-15T11:15:17+08:00",
-      "content_hash": "e99af127b87de1ff1b4a5dedeb4d040f875b9af758c2561f1981dd105369712f"
+      "content_hash": "535ef2d81a4f50b84913d4f106501635762b9416518f7015ef6ee6cfaa678b7a",
+      "updated_at": "2026-09-24T16:26:21+08:00"
     },
     {
       "path": "courses/FDS-ZJU/notes/算法分析基础.md",

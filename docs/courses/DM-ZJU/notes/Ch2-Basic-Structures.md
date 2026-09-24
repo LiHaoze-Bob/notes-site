@@ -7,7 +7,9 @@ title: Ch2-Basic-Structures
 !!! quote
     **The essence of mathematics lies in its freedom.**<div align="right">—— Georg Cantor</div>
 
-    [!abstract]
+
+
+!!! abstract
     ***The Art of Counting the Countless.***
     本篇笔记介绍了集合的基本概念，包括集合的定义、表示方法、集合之间的关系、集合的操作以及函数的基本性质。我们探讨了集合的基数、可数性以及康托定理等重要主题。通过这些内容，读者将能够理解离散数学中集合和函数的基本结构和性质。<small>（由 gpt-4o-mini 生成摘要）</small>
 
