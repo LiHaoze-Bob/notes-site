@@ -67,6 +67,14 @@ def test_a_different_body_heading_is_not_deleted():
     assert '<h1' in output and '正文小节' in output
 
 
+def test_render_strikethrough_without_changing_code_or_escaped_tildes():
+    body = '~~划分策略~~，前~~字~~后，`~~代码~~`，\\~~原样\\~~'
+    soup = BeautifulSoup(render(body, 'courses/示例.md', ''), 'html.parser')
+    assert [item.get_text() for item in soup.find_all('del')] == ['划分策略', '字']
+    assert soup.code.get_text() == '~~代码~~'
+    assert '~~原样~~' in soup.get_text()
+
+
 def test_render_tabsdown_is_accessible_nested_and_has_no_js_fallback():
     body = '''~~~~~tabsdown
 config: position=left, layout=multi, density=compact, personality=underline, palette=secondary, alignment=equal-width
@@ -357,7 +365,7 @@ tags: [test]
 ---
 # 示例
 
-正文[^1]。中文$x^2$。
+正文[^1]。中文$x^2$。~~划分策略~~。
 
 ## **基础**概念 {#基础概念}
 
@@ -383,6 +391,7 @@ tags: [test]
     soup = BeautifulSoup((site / 'courses/FDS-ZJU/notes/示例/index.html').read_text(), 'html.parser')
     assert [link.get_text(strip=True) for link in soup.select('#sidebar a.nav-link')] == ['HOME', 'COURSE', 'READING', 'TECH', 'ABOUT']
     assert soup.select_one('.rouge-code').get_text().strip() == '<img src="literal"> & {{ site.title }} {% include missing.html %}'
+    assert soup.find('del').get_text() == '划分策略'
     assert soup.select_one('.code-header button') and soup.find(id='fn:1')
     assert not soup.select_one('img[src="literal"]')
     assert not soup.select_one('.post-desc')

@@ -68,10 +68,11 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
     result = markdown.markdown(body, extensions=[
         'admonition', 'attr_list', 'tables', 'footnotes', 'md_in_html',
         'pymdownx.details', 'pymdownx.highlight', 'pymdownx.superfences', 'pymdownx.arithmatex',
-        'pymdownx.tasklist', 'toc',
+        'pymdownx.tasklist', 'pymdownx.tilde', 'toc',
     ], extension_configs={
         'pymdownx.arithmatex': {'generic': True, 'smart_dollar': False},
         'pymdownx.highlight': {'use_pygments': False},
+        'pymdownx.tilde': {'subscript': False, 'smart_delete': False},
     })
     soup = BeautifulSoup(result, 'html.parser')
     # The native layout supplies the title. Preserve the original H1 anchor.
