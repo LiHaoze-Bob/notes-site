@@ -55,7 +55,7 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
 
     body = expand_tabsdown(body)
     result = markdown.markdown(body, extensions=[
-        'admonition', 'attr_list', 'tables', 'footnotes', 'md_in_html',
+        'admonition', 'attr_list', 'tables', 'footnotes', 'md_in_html', 'nl2br',
         'pymdownx.details', 'pymdownx.highlight', 'pymdownx.superfences', 'pymdownx.arithmatex',
         'pymdownx.tasklist', 'pymdownx.tilde', 'toc',
     ], extension_configs={

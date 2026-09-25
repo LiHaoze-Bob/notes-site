@@ -75,6 +75,33 @@ def test_render_strikethrough_without_changing_code_or_escaped_tildes():
     assert '~~原样~~' in soup.get_text()
 
 
+def test_obsidian_single_newlines_render_inside_text_blocks_only():
+    body = '''第一行
+第二行
+
+- 列表一
+- 列表二
+
+!!! note "提示"
+    提示第一行
+    提示第二行
+
+```text
+代码第一行
+代码第二行
+```'''
+    soup = BeautifulSoup(render(body, 'courses/示例.md', ''), 'html.parser')
+    paragraph = soup.find('p')
+    assert list(paragraph.stripped_strings) == ['第一行', '第二行']
+    assert len(paragraph.find_all('br')) == 1
+    assert [item.get_text() for item in soup.select('ul > li')] == ['列表一', '列表二']
+    prompt = soup.select_one('.obsidian-callout p:not(.callout-title)')
+    assert list(prompt.stripped_strings) == ['提示第一行', '提示第二行']
+    assert len(prompt.find_all('br')) == 1
+    assert soup.select_one('.rouge-code').get_text() == '代码第一行\n代码第二行\n'
+    assert not soup.select_one('.rouge-code br')
+
+
 def test_render_tabsdown_is_accessible_nested_and_has_no_js_fallback():
     body = '''~~~~~tabsdown
 config: position=left, layout=multi, density=compact, personality=underline, palette=secondary, alignment=equal-width
