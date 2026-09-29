@@ -1,0 +1,32 @@
+{
+  "profile": "https://steamcommunity.com/profiles/76561199304157766/",
+  "name": "sychostar",
+  "avatar": "https://avatars.fastly.steamstatic.com/7a881b454ca37807c2bd6735c0218b62430f36bd_full.jpg",
+  "status": "offline",
+  "currentGame": "",
+  "level": 11,
+  "badges": 10,
+  "games": 32,
+  "recentHours": 14.5,
+  "recentGames": [
+    {
+      "name": "雀魂麻将(MahjongSoul)",
+      "appid": "1329410",
+      "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1329410/capsule_184x69.jpg",
+      "hours": 73.0
+    },
+    {
+      "name": "Brotato",
+      "appid": "1942280",
+      "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1942280/6165a15f07dda4b755fd1b29aefd411710318119/capsule_184x69.jpg?t=1789029155",
+      "hours": 8.2
+    },
+    {
+      "name": "Don't Starve Together",
+      "appid": "322330",
+      "image": "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/322330/29836375ea0f65ee0495d97a26c997f8cef7cab7/capsule_184x69.jpg?t=1790287771",
+      "hours": 9.6
+    }
+  ],
+  "updatedAt": "2026-09-29T11:47:40+00:00"
+}

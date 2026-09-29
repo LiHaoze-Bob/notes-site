@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import markdown
 
 from scripts.exporter import frontmatter, page_url
+from scripts.steam import MARKER as STEAM_MARKER, render_card as steam_card
 from scripts.jekyll import (breadcrumbs, card_directory, card_headings, custom_callout_styles,
                             folder_navigation, folder_tree, post_date, render, section_list)
 
@@ -97,6 +98,7 @@ def stage(docs: Path, work: Path, template: Path, settings: dict, labels: dict) 
                       'html': body, 'headings': [], 'breadcrumbs': [], 'isNote': False})
 
     _, about = frontmatter((template / '_tabs/about.md').read_text())
+    about = about.replace(STEAM_MARKER, steam_card(template))
     about_html = BeautifulSoup(render(about, 'about/index.md', baseurl, 'About', theme='pure'), 'html.parser')
     # The shared About source also has wrappers required by the old Chirpy layout.
     for wrapper in about_html.select('article, div.content'):

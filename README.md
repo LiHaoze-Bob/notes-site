@@ -75,6 +75,8 @@ cp local.example.toml local.toml
 - `site-template/assets/`：共用的头像、字体、Callout、Tabsdown 和 MathJax 资源。
 - `_config.yml` 和其余 `site-template/` 文件：保留的 Chirpy 设置及模板。
 
+About 的 Steam 卡片使用 `site-template/_data/steam.json` 保存公开主页快照，展示头像、等级、采集时的在线或游戏状态、徽章、游戏数量、近两周时长和最近三款游戏。GitHub Actions 每次发布前运行 `scripts/steam.py` 刷新；网络错误或限流时保留旧快照及其原始更新时间。卡片不表示实时在线状态，也不把最近三款游戏时长当作全库总时长。本地刷新可运行 `.venv/bin/python scripts/steam.py`，随后运行 `.venv/bin/python scripts/site.py build`；无需 Steam API 密钥。
+
 课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 按原目录层级显示文件夹和笔记；Tech 的栏目首页不展示深层文件夹，而是在一级分组下直接列出带文章图标的公开笔记；Reading 则保留完整的可折叠目录树和文章图标。笔记的 URL 和顶部路径导航仍保留完整目录层级。
 
 可选属性 `date` 设置文章日期（如 `2026-09-14`）。没有该属性时，已有笔记使用 Git 中首次公开的日期；新笔记使用首次导出到公开快照的时间。`Posted` 会保持不变；公开内容后续发生变化时，文章页会同时显示 `Updated`，更新时间不会因公开快照未变的重复构建而刷新。这两类时间和公开内容指纹均保存在 `docs/publication.json`。公开的目录 `index.md` 优先作为该目录首页；课程目录首页会在正文后自动列出同目录及子目录中已公开的笔记，顶层栏目索引不重复加入首页文章列表。文章页标题下不自动重复正文摘要；只有笔记显式填写 `description` 时才显示简介。

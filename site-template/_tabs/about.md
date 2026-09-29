@@ -6,43 +6,30 @@ order: 4
 permalink: /about/
 ---
 
-<!-- Use the base layout to preserve the README's image links and picture sources. -->
 <article class="px-1">
   <h1 class="dynamic-title">About</h1>
-  <div class="content" markdown="1">
-
-<a href="https://www.last.fm/user/sychostar7">
-  <img
-    align="right"
-    src="https://nowplaying-beryl.vercel.app/api/now-playing?user=sychostar7&amp;width=420&amp;cover=cd&amp;spin=always&amp;spin_speed=8&amp;v=da4f80e"
-    width="420"
-    alt="Now Playing"
-  />
-</a>
-
-### <img width="220" height="25" src="https://glitch-art.vercel.app/api/simple?word=Hi%20I%27m%20sychostar&amp;font=Doto" alt="Hi I'm sychostar" /> 👋
-
-A CS student at Zhejiang University.
-
-Exploring deep learning, AI agents, and whatever sparks my curiosity.
-
-<br clear="both">
-
-<picture>
-  <source
-    media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake-dark.svg"
-  />
-  <source
-    media="(prefers-color-scheme: light)"
-    srcset="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake.svg"
-  />
-  <img
-    width="100%"
-    alt="LiHaoze-Bob contribution snake"
-    src="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake.svg"
-  />
-</picture>
-
+  <div class="about-profile">
+    <section class="about-intro" aria-labelledby="about-greeting">
+      <h2 id="about-greeting" class="about-greeting"><img width="220" height="25" src="https://glitch-art.vercel.app/api/simple?word=Hi%20I%27m%20sychostar&amp;font=Doto" alt="Hi I'm sychostar" /><span>👋</span></h2>
+      <p class="about-role">A CS student at Zhejiang University.</p>
+      <p class="about-description">Exploring deep learning, AI agents, and whatever sparks my curiosity.</p>
+    </section>
+    <section class="about-music" aria-labelledby="about-music-title">
+      <h2 id="about-music-title">NOW PLAYING</h2>
+      <a class="about-player" href="https://www.last.fm/user/sychostar7" aria-label="Now Playing — view sychostar7 on Last.fm">
+        <img src="https://nowplaying-beryl.vercel.app/api/now-playing?user=sychostar7&amp;width=420&amp;cover=cd&amp;spin=always&amp;spin_speed=8&amp;v=da4f80e" width="420" height="118" alt="Now Playing — current or last played track on Last.fm" />
+      </a>
+    </section>
+    <!-- steam-profile -->
+    <section class="about-activity" aria-labelledby="about-activity-title">
+      <div class="about-section-heading">
+        <h2 id="about-activity-title">GITHUB ACTIVITY</h2>
+        <a href="https://github.com/LiHaoze-Bob">LiHaoze-Bob <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="about-contributions">
+        <img class="about-snake-light" width="100%" loading="lazy" alt="LiHaoze-Bob contribution snake" src="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake.svg" />
+        <img class="about-snake-dark" width="100%" loading="lazy" alt="LiHaoze-Bob contribution snake" src="https://raw.githubusercontent.com/LiHaoze-Bob/LiHaoze-Bob/output/github-snake-dark.svg" />
+      </div>
+    </section>
   </div>
 </article>

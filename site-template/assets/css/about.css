@@ -1,0 +1,62 @@
+/* Shared About content; keep images in normal flow, below their headings. */
+.about-page { max-width: 48rem; margin: 2rem auto 5rem; }
+.about-page > h1 { font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 600; line-height: 1.25; letter-spacing: -.025em; color: var(--text-color); margin: 0 0 2.5rem; }
+.about-profile { color: var(--text-color); }
+.about-profile .about-greeting { display: flex; align-items: center; gap: .65rem; margin: 0 0 1.8rem; line-height: 1; border: 0; }
+.about-profile .about-greeting img { display: block; width: 220px; max-width: calc(100% - 2.5rem); height: auto; margin: 0; border-radius: 0; }
+.about-greeting span { font-size: 1.5rem; }
+.about-profile p { margin: 0; line-height: 1.85; }
+.about-profile .about-role { margin-bottom: .5rem; }
+.about-description { color: var(--text-muted-color); }
+.about-profile .about-music { margin-top: 2.5rem; }
+.about-profile :is(.about-music, .about-activity, .about-steam) h2 { margin: 0 0 1.1rem; font-size: .72rem; font-weight: 600; letter-spacing: .14em; line-height: 1.5; color: var(--text-muted-color); border: 0; }
+.about-profile a { text-decoration: none; border-bottom: 0; }
+.about-player { display: block; width: min(100%, 420px); border-radius: 1rem; }
+.about-profile .about-player img { display: block; width: 100%; height: auto; margin: 0; border-radius: 1rem; box-shadow: 0 8px 24px #162a3d12; }
+.about-activity { border-top: 1px solid var(--main-border-color); padding-top: 1.75rem; margin-top: 2.5rem; }
+.about-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.about-section-heading a { color: var(--text-muted-color); font-size: .75rem; }
+.about-section-heading a:hover { color: var(--link-color); }
+.about-contributions { overflow: hidden; }
+.about-contributions img { width: 100%; height: auto; margin: 0; }
+.about-snake-light { display: block; }
+.about-snake-dark { display: none; }
+.about-steam { margin-top: 2.5rem; }
+.steam-card { width: min(100%, 420px); box-sizing: border-box; padding: 1.15rem; border: 1px solid var(--main-border-color); border-radius: 1rem; background: color-mix(in srgb, var(--main-bg) 94%, #7095ad); }
+.steam-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.steam-identity { display: flex; align-items: center; gap: .8rem; min-width: 0; color: var(--text-color); }
+.about-profile .steam-avatar { display: block; width: 48px; height: 48px; flex: 0 0 48px; border-radius: .65rem; margin: 0; }
+.steam-identity > div { min-width: 0; }
+.steam-identity strong { display: block; font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; line-height: 1.4; }
+.steam-level { display: block; font-size: .7rem; color: var(--text-muted-color); margin-top: .15rem; }
+.steam-status { display: flex; align-items: baseline; gap: .35rem; margin-top: .2rem; font-size: .7rem; line-height: 1.5; color: var(--text-muted-color); overflow-wrap: anywhere; }
+.steam-status::before { content: ''; width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; flex: 0 0 .4rem; }
+.steam-status[data-status='online'] { color: #367791; }
+.steam-status[data-status='in-game'] { color: #437d38; }
+:is(.dark, [data-mode='dark']) .steam-status[data-status='online'] { color: #8fc9e0; }
+:is(.dark, [data-mode='dark']) .steam-status[data-status='in-game'] { color: #a0ca82; }
+.steam-stats { display: flex; flex: 0 0 auto; gap: 1rem; margin: 0; }
+.steam-stats > div { display: flex; flex-direction: column-reverse; align-items: center; }
+.steam-stats dt { font-size: .62rem; color: var(--text-muted-color); font-weight: 400; }
+.steam-stats dd { font-size: 1.05rem; line-height: 1.35; font-weight: 600; margin: 0; }
+.about-profile .steam-playtime { font-size: .78rem; color: var(--text-muted-color); margin: 1rem 0 .8rem; }
+.steam-playtime strong { color: var(--text-color); font-weight: 600; }
+.steam-recent { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.steam-game { min-width: 0; color: var(--text-color); }
+.about-profile .steam-game img { display: block; width: 100%; height: auto; aspect-ratio: 184 / 69; object-fit: cover; border-radius: .3rem; margin: 0 0 .4rem; }
+.steam-game strong { display: block; font-size: .67rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.6; }
+.steam-game > span { display: block; font-size: .6rem; color: var(--text-muted-color); }
+.steam-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .3rem .7rem; padding-top: .85rem; margin-top: .85rem; border-top: 1px solid var(--main-border-color); font-size: .6rem; color: var(--text-muted-color); }
+.steam-footer a { color: inherit; }
+:is(.dark, [data-mode='dark']) .about-snake-light { display: none; }
+:is(.dark, [data-mode='dark']) .about-snake-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-mode]):not(.light):not(.dark) .about-snake-light { display: none; }
+  html:not([data-mode]):not(.light):not(.dark) .about-snake-dark { display: block; }
+}
+@media (max-width: 767px) {
+  .about-page { margin: 1.25rem auto 3rem; }
+  .about-page > h1 { margin-bottom: 2rem; }
+  .about-profile .about-greeting { margin-bottom: 1.5rem; }
+  .about-section-heading { flex-wrap: wrap; gap: 0 .8rem; margin-bottom: .5rem; }
+}

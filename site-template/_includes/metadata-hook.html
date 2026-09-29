@@ -1,6 +1,9 @@
 <link rel="stylesheet" href="{{ '/assets/css/obsidian-callouts.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/breadcrumbs.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/css/tabsdown.css' | relative_url }}">
+{% if page.permalink == '/about/' %}
+  <link rel="stylesheet" href="{{ '/assets/css/about.css' | relative_url }}">
+{% endif %}
 <script defer src="{{ '/assets/js/tabsdown.js' | relative_url }}"></script>
 {% if page.layout == 'home' %}
   <link rel="stylesheet" href="{{ '/assets/css/note-cards.css' | relative_url }}">

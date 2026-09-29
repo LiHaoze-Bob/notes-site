@@ -24,6 +24,7 @@ import yaml
 
 from scripts.exporter import ExportError, frontmatter, natural_key, page_url
 from scripts.tabsdown import TabsdownError, parse as parse_tabsdown, site_markup, transform_blocks
+from scripts.steam import MARKER as STEAM_MARKER, render_card as steam_card
 
 
 def write_page(path: Path, metadata: dict, content: str):
@@ -392,6 +393,9 @@ def breadcrumbs(source: str, notes: dict, tabs: dict, labels: dict) -> list[dict
 def stage(docs: Path, destination: Path, template: Path, settings: dict, labels: dict):
     """Build only from the exported snapshot; never needs the private Vault."""
     shutil.copytree(template, destination, dirs_exist_ok=True)
+    about = destination / '_tabs/about.md'
+    if about.exists():
+        about.write_text(about.read_text().replace(STEAM_MARKER, steam_card(template)))
     if (docs / 'assets').exists():
         shutil.copytree(docs / 'assets', destination / 'assets', dirs_exist_ok=True)
     shutil.copy2(docs / 'publication.json', destination / 'publication.json')
