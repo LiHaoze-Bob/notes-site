@@ -2,6 +2,7 @@
 import { TOC } from 'astro-pure/components/pages'
 import ContentLayout from '../layouts/ContentLayout.astro'
 import Home from '../components/Home.astro'
+import PageViews from '../components/PageViews.astro'
 import { pages, notes, date, type NotePage } from '../lib/content'
 import { href } from '../site.config'
 
@@ -25,9 +26,10 @@ const { page, current } = Astro.props
         <span aria-hidden='true'>›</span><span aria-current='page'>{page.title}</span>
       </nav>
       <h1 class='text-2xl font-medium sm:mb-2 sm:text-3xl' data-pagefind-meta='title'>{page.title}</h1>
-      {page.publishedAt && <div class='post-meta'>
-        <span>Posted <time datetime={page.publishedAt}>{date(page.publishedAt)}</time></span>
+      {(page.publishedAt || page.isNote || page.route === 'about') && <div class='post-meta'>
+        {page.publishedAt && <span>Posted <time datetime={page.publishedAt}>{date(page.publishedAt)}</time></span>}
         {page.updatedAt && <span>Updated <time datetime={page.updatedAt}>{date(page.updatedAt)}</time></span>}
+        {(page.isNote || page.route === 'about') && <PageViews />}
       </div>}
       {page.description && <p class='post-desc'>{page.description}</p>}
     </Fragment>

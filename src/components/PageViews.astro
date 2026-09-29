@@ -1,0 +1,23 @@
+---
+const productionOrigin = Astro.site?.origin
+---
+
+<span class='page-views' data-production-origin={productionOrigin} data-pagefind-ignore title='本页累计访问次数（PV）；未加载时显示 —'>
+  <span id='busuanzi_value_page_pv' aria-live='polite'>—</span> views
+</span>
+
+<script>
+  const counter = document.querySelector<HTMLElement>('.page-views')
+  // Even a production build served locally must not increment public counters.
+  if (counter?.dataset.productionOrigin === window.location.origin) {
+    const script = document.createElement('script')
+    script.id = 'page-views-script'
+    script.async = true
+    script.src = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'
+    if (!document.getElementById(script.id)) document.head.appendChild(script)
+  }
+</script>
+
+<style>
+  .page-views { white-space: nowrap; font-variant-numeric: tabular-nums; }
+</style>

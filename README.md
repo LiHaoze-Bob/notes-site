@@ -98,7 +98,9 @@ cp local.example.toml local.toml
 
 顶部路径导航按笔记所在目录显示完整层级，例如 Home › Course › FDS-ZJU › notes › 算法分析基础，每个上级目录均可点击返回；窄窗口中保留该路径并支持横向滚动，不再显示笼统的 Post。目录名称优先使用 `labels`，其次使用公开目录首页的标题，最后使用文件夹名；顶层栏目使用侧栏名称。
 
-Course 和 Reading 的目录使用浏览器原生折叠控件。旧标签、分类和分页网址继续可用。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`，Pure 的来源及改动见 `PURE-NOTICE.md`。当前未配置评论、访问统计与 PWA 离线缓存。
+Course 和 Reading 的目录使用浏览器原生折叠控件。旧标签、分类和分页网址继续可用。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`，Pure 的来源及改动见 `PURE-NOTICE.md`。当前未配置评论与 PWA 离线缓存。
+
+Pure 的 About 和笔记标题下显示 `views`，使用[不蒜子](https://busuanzi.ibruce.info/)记录当前页面的累计访问次数（PV，重复访问会累加，不代表独立访客数）。计数由第三方服务按页面网址保存，不能补回接入前的历史访问；更换域名或路径可能重新计数。`src/components/PageViews.astro` 仅在 `astro.config.ts` 配置的正式站点域名加载计数脚本，本地预览不请求统计服务。加载中、脚本被拦截或服务不可用时显示 `— views`，正文正常显示；Chirpy 回退主题保持原状。
 
 ## 回到 Chirpy
 
