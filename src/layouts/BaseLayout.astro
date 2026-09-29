@@ -1,0 +1,62 @@
+---
+import { Footer, ThemeProvider } from 'astro-pure/components/basic'
+import type { SiteMeta } from 'astro-pure/types'
+import Header from '../components/Header.astro'
+import config, { href } from '../site.config'
+import '../styles/app.css'
+import '../styles/site.css'
+
+interface Props { meta: SiteMeta; highlightColor?: string; math?: boolean }
+const { meta, math = false } = Astro.props
+const title = meta.title ? `${meta.title} • ${config.title}` : config.title
+const canonical = new URL(Astro.url.pathname, Astro.site)
+---
+<!doctype html>
+<html lang='zh-CN'>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <title>{title}</title>
+    <meta name='description' content={meta.description || config.description} />
+    <meta name='theme-color' content='#FCFCFD' />
+    <meta property='og:title' content={title} />
+    <meta property='og:description' content={meta.description || config.description} />
+    <meta property='og:url' content={canonical} />
+    <meta property='og:image' content={new URL(href('/assets/images/avatar.png'), Astro.site)} />
+    <link rel='canonical' href={canonical} />
+    <link rel='icon' href={href('/assets/images/avatar.png')} />
+    <link rel='alternate' type='application/rss+xml' title='sychostar' href={href('/feed.xml')} />
+    <link rel='stylesheet' href={href('/assets/lib/fontawesome-free/css/all.min.css')} />
+    <link rel='stylesheet' href={href('/assets/css/obsidian-callouts.css')} />
+    <link rel='stylesheet' href={href('/assets/css/tabsdown.css')} />
+    <ThemeProvider />
+  </head>
+  <body class='flex justify-center bg-background text-foreground'>
+    <a class='skip-link' href='#main-content'>跳到正文</a>
+    <div id='main-container' class='w-full max-w-[70rem] min-h-[100dvh] flex flex-col justify-between'>
+      <Header />
+      <div class='flex-1 w-full' id='main-content'><slot /></div>
+      <Footer />
+    </div>
+    <script is:inline src={href('/assets/js/tabsdown.js')}></script>
+    {math && <>
+      <script is:inline>
+        window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']], processEscapes: true }, options: { ignoreHtmlClass: 'tex2jax_ignore', processHtmlClass: 'arithmatex' } }
+      </script>
+      <script is:inline defer src={href('/assets/vendor/mathjax/tex-mml-chtml.js')}></script>
+    </>}
+    <script>
+      import mediumZoom from 'medium-zoom'
+      mediumZoom('#content img.zoomable', { background: 'var(--main-bg)', margin: 24 })
+      document.querySelectorAll<HTMLButtonElement>('.note-code .code-header button').forEach(button => {
+        button.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(button.closest('.note-code')?.querySelector('code')?.textContent || '')
+            button.textContent = 'Copied'
+            setTimeout(() => { button.textContent = 'Copy' }, 1500)
+          } catch { button.textContent = '请选中代码复制' }
+        })
+      })
+    </script>
+  </body>
+</html>

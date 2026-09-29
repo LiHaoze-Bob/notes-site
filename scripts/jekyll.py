@@ -32,8 +32,9 @@ def write_page(path: Path, metadata: dict, content: str):
                     + '---\n' + content + '\n')
 
 
-def render(body: str, source: str, baseurl: str, title: str | None = None) -> str:
-    """Keep Obsidian syntax, then use Chirpy's native prompt/code markup."""
+def render(body: str, source: str, baseurl: str, title: str | None = None,
+           theme: str = 'chirpy') -> str:
+    """Render common Obsidian syntax with the selected theme's code/image markup."""
     counter = 0
 
     def expand_tabsdown(text: str) -> str:
@@ -98,6 +99,11 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
                  '<table class="rouge-table"><tbody><tr><td class="rouge-gutter gl">'
                  f'<pre class="lineno">{lines}</pre></td><td class="rouge-code">'
                  f'<pre>{colored}</pre></td></tr></tbody></table></code></pre></div></div>')
+        if theme == 'pure':
+            block = (f'<div class="note-code" data-language="{html.escape(language, quote=True)}">'
+                     '<div class="code-header"><span>' + html.escape(language) + '</span>'
+                     '<button type="button" aria-label="复制代码">Copy</button></div>'
+                     f'<pre class="highlight"><code>{colored}</code></pre></div>')
         code.parent.replace_with(BeautifulSoup(block, 'html.parser'))
     for code in soup.select('code'):
         if not code.find_parent(class_='highlight'):
@@ -117,8 +123,10 @@ def render(body: str, source: str, baseurl: str, title: str | None = None) -> st
             raise ExportError('链接超出公开目录：' + target)
         url = page_url(path) if path.endswith('.md') else quote(path, safe='/.-_~')
         # Chirpy's native image renderer adds baseurl itself.
-        prefix = '' if element.name == 'img' else baseurl
+        prefix = '' if element.name == 'img' and theme == 'chirpy' else baseurl
         element[attribute] = urlunsplit(('', '', prefix + '/' + url, parsed.query, parsed.fragment))
+        if theme == 'pure' and element.name == 'img':
+            element['class'] = [*element.get('class', []), 'zoomable']
     # Chirpy parses the Kramdown-style space before a void element's closing slash.
     return soup.decode(formatter=HTMLFormatter(entity_substitution=EntitySubstitution.substitute_xml,
                                                void_element_close_prefix=' /'))

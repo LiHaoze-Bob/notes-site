@@ -282,7 +282,7 @@ def test_built_breadcrumbs_link_every_public_parent(tmp_path):
     ]}
     docs = tmp_path / 'docs'
     Exporter(vault, cfg, ROOT / 'site-template').export(docs)
-    build_snapshot(docs, tmp_path / 'build')
+    build_snapshot(docs, tmp_path / 'build', theme='chirpy')
     site = tmp_path / 'build/site'
     cases = [
         ('courses/课程2/实验 一/示例', ['Home', 'Course', '<课程> & {{ literal }}', '实验 一', '示例'],
@@ -432,7 +432,7 @@ tags: [test]
             'updated_at': '2026-09-16T09:45:00+08:00',
         }
     })
-    pages = build_snapshot(docs, tmp_path / 'build')
+    pages = build_snapshot(docs, tmp_path / 'build', theme='chirpy')
     assert pages >= 10
     site = tmp_path / 'build/site'
     soup = BeautifulSoup((site / 'courses/FDS-ZJU/notes/示例/index.html').read_text(), 'html.parser')
@@ -476,7 +476,7 @@ def test_built_post_navigation_uses_only_same_folder_in_filename_order(tmp_path)
     cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
     docs = tmp_path / 'docs'
     Exporter(vault, cfg, ROOT / 'site-template').export(docs)
-    build_snapshot(docs, tmp_path / 'build')
+    build_snapshot(docs, tmp_path / 'build', theme='chirpy')
     site = tmp_path / 'build/site'
 
     def navigation(path):

@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.exporter import Exporter, ExportError
 from scripts.jekyll import stage as stage_jekyll
+from scripts.astro import stage as stage_astro
 
 RUNTIME = ROOT / '.runtime'
 STATUS = RUNTIME / 'status.json'
@@ -36,6 +37,7 @@ for ruby_bin in ('/usr/local/opt/ruby@3.3/bin', '/opt/homebrew/opt/ruby@3.3/bin'
 ENV['BUNDLE_GEMFILE'] = str(ROOT / 'Gemfile')
 ENV.setdefault('BUNDLE_PATH', str(RUNTIME / 'bundle'))
 ENV['JEKYLL_ENV'] = 'production'
+ENV['ASTRO_TELEMETRY_DISABLED'] = '1'
 
 
 def config():
@@ -54,8 +56,8 @@ def status(phase, **values):
     print(phase, flush=True)
 
 
-def run(*args, capture=False, timeout=180, cwd=ROOT):
-    result = subprocess.run(args, cwd=cwd, env=ENV, text=True, stdout=subprocess.PIPE if capture else None,
+def run(*args, capture=False, timeout=180, cwd=ROOT, env=None):
+    result = subprocess.run(args, cwd=cwd, env=env or ENV, text=True, stdout=subprocess.PIPE if capture else None,
                             stderr=subprocess.PIPE if capture else None, timeout=timeout)
     if result.returncode:
         detail = (result.stderr or result.stdout or '').strip() if capture else ''
@@ -151,10 +153,24 @@ def publication_records():
     return records
 
 
-def build_snapshot(docs: Path, work: Path):
+def build_snapshot(docs: Path, work: Path, theme: str | None = None):
     settings = yaml.safe_load((ROOT / '_config.yml').read_text())
     if settings['url'] + settings.get('baseurl', '') + '/' != config()['site']['url']:
         raise ExportError('_config.yml 中的网址必须与 publish.toml 一致')
+    theme = theme or config()['site'].get('theme', 'chirpy')
+    if theme == 'pure':
+        work.mkdir(parents=True, exist_ok=True)
+        data = stage_astro(docs, work, ROOT / 'site-template', settings, config().get('labels', {}))
+        npm = shutil.which('npm', path=ENV.get('PATH'))
+        if not npm or not (ROOT / 'node_modules/astro').exists():
+            raise ExportError('请安装 Node.js 22.12+ 并在网站目录执行 npm ci（见 README）')
+        env = {**ENV, 'ASTRO_CONTENT_FILE': str(data.resolve()),
+               'ASTRO_PUBLIC_DIR': str((work / 'public').resolve()),
+               'ASTRO_OUT_DIR': str((work / 'site').resolve())}
+        run(npm, 'run', 'build', env=env, timeout=300)
+        return validate(work / 'site')
+    if theme != 'chirpy':
+        raise ExportError('未知主题：' + theme)
     stage_jekyll(docs, work / 'source', ROOT / 'site-template', settings, config().get('labels', {}))
     bundle = shutil.which('bundle', path=ENV.get('PATH'))
     if not bundle:
@@ -170,17 +186,17 @@ def install_snapshot(source: Path):
     shutil.move(str(source), ROOT / 'site')
 
 
-def build():
+def build(theme=None):
     """CI builds the committed public snapshot, without local.toml or the Vault."""
     RUNTIME.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='jekyll-', dir=RUNTIME) as temporary:
+    with tempfile.TemporaryDirectory(prefix='site-', dir=RUNTIME) as temporary:
         work = Path(temporary)
-        pages = build_snapshot(ROOT / 'docs', work)
+        pages = build_snapshot(ROOT / 'docs', work, theme)
         install_snapshot(work / 'site')
-    print(f'Jekyll 构建与链接校验通过：{pages} 个页面。', flush=True)
+    print(f'网站构建与链接校验通过：{pages} 个页面。', flush=True)
 
 
-def prepare(write_export=False):
+def prepare(write_export=False, theme=None):
     if not (ROOT / 'local.toml').exists():
         raise ExportError('请先将 local.example.toml 复制为 local.toml 并设置 vault 路径')
     local = tomllib.loads((ROOT / 'local.toml').read_text())
@@ -191,7 +207,7 @@ def prepare(write_export=False):
         exporter = Exporter(Path(local['vault']), config(), ROOT / 'site-template')
         manifest = exporter.export(stage / 'docs', publication_records())
         status('正在构建网站', notes=len(manifest['notes']), images=len(manifest['images']))
-        pages = build_snapshot(stage / 'docs', stage)
+        pages = build_snapshot(stage / 'docs', stage, theme)
         # 所有检查通过后才替换站点快照，失败不会影响已有导出或线上页面。
         install_snapshot(stage / 'site')
         if write_export:
@@ -206,8 +222,8 @@ def prepare(write_export=False):
         return manifest
 
 
-def preview():
-    prepare()
+def preview(theme=None):
+    prepare(theme=theme)
     preview_root = RUNTIME / 'preview'
     preview_root.mkdir(exist_ok=True)
     target = preview_root / 'notes-site'
@@ -304,8 +320,11 @@ def publish():
 def main():
     parser = argparse.ArgumentParser(description='sychostar 笔记网站发布工具')
     parser.add_argument('command', choices=['check', 'preview', 'publish', 'build', 'validate'])
+    parser.add_argument('--theme', choices=['pure', 'chirpy'], help='临时选择主题，不修改笔记或默认设置')
     parser.add_argument('--from-obsidian', action='store_true')
     args = parser.parse_args()
+    if args.theme and args.command not in {'check', 'build', 'preview'}:
+        parser.error('--theme 仅适用于 check、build 和 preview；上线主题由 publish.toml 决定')
     if args.command == 'validate':
         print(f'构建结果校验通过：{validate(ROOT / "site")} 个页面。')
         return
@@ -317,13 +336,13 @@ def main():
             raise ExportError('已有检查、预览或发布任务正在运行，请等待它完成')
         status('开始：' + args.command, command=args.command, origin='obsidian' if args.from_obsidian else 'terminal', error=None)
         if args.command == 'check':
-            prepare()
+            prepare(theme=args.theme)
             status('检查通过')
         elif args.command == 'build':
-            build()
+            build(theme=args.theme)
             status('构建通过')
         elif args.command == 'preview':
-            preview()
+            preview(theme=args.theme)
         else:
             publish()
 

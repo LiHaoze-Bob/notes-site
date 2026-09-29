@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import NoteList from './NoteList.astro'
+import { notes } from '../lib/content'
+import { href } from '../site.config'
+interface Props { current?: number }
+const { current = 1 } = Astro.props
+const count = Math.max(1, Math.ceil(notes.length / 10))
+---
+<BaseLayout meta={{ title: current === 1 ? '' : `Page ${current}` }}>
+  {current === 1 && <section class='home-intro'>
+    <div><p class='eyebrow'>NOTES & IDEAS</p><h1>sychostar</h1><p class='home-description'>课程笔记、技术积累与阅读记录。</p><p class='home-bio'>A CS student at Zhejiang University.</p></div>
+    <img src={href('/assets/images/avatar.png')} alt='sychostar' width='88' height='88' />
+  </section>}
+  <main class='home-notes'>
+    <div class='section-heading'><h2>Latest notes</h2><span>{notes.length} 篇公开笔记</span></div>
+    <NoteList notes={notes.slice((current - 1) * 10, current * 10)} {current} {count} />
+  </main>
+</BaseLayout>

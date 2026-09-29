@@ -3,6 +3,7 @@ name = "sychostar"
 url = "https://lihaoze-bob.github.io/notes-site/"
 repository = "LiHaoze-Bob/notes-site"
 branch = "main"
+theme = "pure"
 
 [[sources]]
 path = "30_课程"

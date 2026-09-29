@@ -1,0 +1,19 @@
+---
+import { date, type NotePage } from '../lib/content'
+import { href } from '../site.config'
+interface Props { notes: NotePage[]; current?: number; count?: number }
+const { notes, current = 1, count = 1 } = Astro.props
+---
+<div id='post-list' class='note-list'>
+  {notes.map(note => (
+    <article class='note-preview'>
+      <div class='note-preview-meta'><time datetime={note.publishedAt}>{date(note.publishedAt!)}</time><span>{note.directory?.[0]}</span></div>
+      <h2><a href={note.url}>{note.title}</a></h2>
+      {note.cardHeadings?.length ? <p class='note-summary'>{note.cardHeadings.join(' · ')}</p> : null}
+      <p class='note-directory'>{note.directory?.join(' / ')}</p>
+    </article>
+  ))}
+</div>
+{count > 1 && <nav class='pagination' aria-label='文章列表分页'>
+  {Array.from({ length: count }, (_, i) => i + 1).map(number => <a aria-current={number === current ? 'page' : undefined} href={href(number === 1 ? '/' : `/page${number}/`)}>{number}</a>)}
+</nav>}

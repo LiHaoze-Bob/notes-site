@@ -11,3 +11,5 @@ local.toml
 vendor/bundle/
 .jekyll-cache/
 .sass-cache/
+node_modules/
+.astro/

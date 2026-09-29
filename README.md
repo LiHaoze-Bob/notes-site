@@ -32,15 +32,13 @@ publish: true
 
 ## 环境与命令
 
-使用 **Jekyll + 官方 Chirpy 7.6.0**，Ruby 依赖由 `Gemfile.lock` 固定。Python 3.12 负责筛选并转换 Obsidian 笔记，依赖由 `uv.lock` 固定。
+默认使用 **Astro 6.4.8 + Astro Theme Pure（astro-pure 1.4.9）**，依赖由 `package-lock.json` 固定。Python 3.12 负责筛选并转换 Obsidian 笔记，依赖由 `uv.lock` 固定。原来的 Jekyll + Chirpy 7.6.0 渲染器、模板和 Ruby 依赖仍然保留，支持回退。
 
-新机器先安装 Ruby 3.3；macOS 可用 `brew install ruby@3.3`。在项目根目录执行：
+新机器安装 Node.js 22.12+；需要验证或使用旧主题时再安装 Ruby 3.3（macOS 可用 `brew install ruby@3.3`）。在项目根目录执行：
 
 ```sh
 uv sync --frozen --python 3.12
-# macOS Homebrew 安装的 Ruby
-export PATH="$(brew --prefix ruby@3.3)/bin:$PATH"
-BUNDLE_PATH=.runtime/bundle bundle install
+npm ci
 cp local.example.toml local.toml
 # 编辑 local.toml，填写本机 Vault 的绝对路径
 .venv/bin/python scripts/site.py check
@@ -67,12 +65,15 @@ cp local.example.toml local.toml
 
 ## 网站与主题
 
-完整使用 [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy) 官方 gem 的布局、样式和脚本，包括首页文章列表、搜索、阅读目录、图片放大、代码复制、明暗切换和 RSS。侧栏依次为 **HOME / COURSE / READING / TECH / ABOUT**。
+使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页展示最新笔记，顶部依次为 **Course / Reading / Tech / About**。图片放大、代码复制、MathJax 公式和 RSS 保留。
 
-- `_config.yml`：站名、简介、头像、网址和 Chirpy 功能设置。
-- `site-template/_tabs/`：栏目标题、图标、顺序与 About 正文。Course 自动生成可折叠的课程树；Tech 只显示「技术积累 / Tools」一层分组并扁平罗列文章；Reading 在「Reading / Paper」下保留可展开的深层目录。
-- `site-template/assets/`：头像和本地字体、搜索、目录、图片预览、MathJax 等资源。
-- `site-template/_data/`：社交入口、栏目英文名称，以及静态资源地址。
+- `src/site.config.ts`：Pure 的站名、简介、导航、社交链接和功能设置。
+- `src/layouts/`、`src/components/`、`src/styles/`：Pure 页面、首页列表和笔记样式。
+- `astro.config.ts`：静态构建及 GitHub Pages 的 `/notes-site` 路径。
+- `publish.toml` 的 `site.theme`：默认主题，`pure` 或 `chirpy`。
+- `site-template/_tabs/about.md`：两种主题共用的 About 正文。
+- `site-template/assets/`：共用的头像、字体、Callout、Tabsdown 和 MathJax 资源。
+- `_config.yml` 和其余 `site-template/` 文件：保留的 Chirpy 设置及模板。
 
 课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 按原目录层级显示文件夹和笔记；Tech 的栏目首页不展示深层文件夹，而是在一级分组下直接列出带文章图标的公开笔记；Reading 则保留完整的可折叠目录树和文章图标。笔记的 URL 和顶部路径导航仍保留完整目录层级。
 
@@ -84,17 +85,34 @@ cp local.example.toml local.toml
 
 顶部路径导航按笔记所在目录显示完整层级，例如 Home › Course › FDS-ZJU › notes › 算法分析基础，每个上级目录均可点击返回；窄窗口中保留该路径并支持横向滚动，不再显示笼统的 Post。目录名称优先使用 `labels`，其次使用公开目录首页的标题，最后使用文件夹名；顶层栏目使用侧栏名称。
 
-`site-template/_includes/post-nav.html` 覆写主题的文章导航组件；Course 树在官方分类卡片样式上补充局部样式，使用浏览器原生折叠控件。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`。当前未配置评论、访问统计与 PWA 离线缓存。
+Course 和 Reading 的目录使用浏览器原生折叠控件。旧标签、分类和分页网址继续可用。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`，Pure 的来源及改动见 `PURE-NOTICE.md`。当前未配置评论、访问统计与 PWA 离线缓存。
+
+## 回到 Chirpy
+
+先用**最新公开快照**预览旧主题，不改默认设置或笔记：
+
+```sh
+# 第一次使用旧主题时安装它的依赖
+export PATH="$(brew --prefix ruby@3.3)/bin:$PATH"
+BUNDLE_PATH=.runtime/bundle bundle install
+.venv/bin/python scripts/site.py build --theme chirpy
+# 此时本机预览服务显示旧主题；build 不读取 Vault 或覆盖 docs/
+```
+
+也可以运行 `check --theme chirpy` 或 `preview --theme chirpy`，临时用旧主题检查最新的 Obsidian 公开笔记。恢复 Pure 预览运行 `build --theme pure`。
+
+永久切回时，仅将 `publish.toml` 中的 `theme = "pure"` 改为 `theme = "chirpy"`，检查并提交该设置后再部署。`docs/`、发布时间记录和后续新增笔记都保留；GitHub Actions 已同时安装两种主题所需依赖。旧版本另有本地标签 `chirpy-before-astro-2026-09-29`（`9507ba0`），用于查看完整的迁移前源码，**不要为了换外观将整个仓库重置到该标签**。
 
 ## 开发
 
 ```sh
 uv run --frozen pytest -q
+ASTRO_TELEMETRY_DISABLED=1 npm run check
 # 仅用已导出的公开内容构建，与 GitHub Actions 相同，不读取 Vault
 uv run --frozen python scripts/site.py build
 ```
 
-`scripts/exporter.py` 负责筛选公开内容、转换 Obsidian 语法和复制引用图片；`scripts/jekyll.py` 将公开 Markdown 转为 Chirpy 可直接使用的文章和目录页；`scripts/site.py` 负责构建、检查、预览和发布。临时 Jekyll 源目录位于 `.runtime/`，最终输出位于 `site/`，均不提交。
+`scripts/exporter.py` 负责筛选公开内容、转换 Obsidian 语法和复制引用图片；`scripts/astro.py` 将公开快照适配为 Pure 页面数据；`scripts/jekyll.py` 保留原主题适配器，也提供两种主题共用的正文转换、目录和日期逻辑；`scripts/site.py` 负责构建、检查、预览和发布。临时数据及资源位于 `.runtime/`，最终输出位于 `site/`，均不提交。
 
 转换层保留数学公式、嵌套提示块、代码、中文锚点与既有网址。正文禁用 Liquid 展开，因此笔记里的 `{{ ... }}` 或 `{% ... %}` 示例仍作为原文展示。GitHub Actions 无需访问 Obsidian Vault。
 

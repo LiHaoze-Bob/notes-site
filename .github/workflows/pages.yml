@@ -14,6 +14,7 @@ jobs:
   deploy:
     env:
       BUNDLE_PATH: vendor/bundle
+      ASTRO_TELEMETRY_DISABLED: '1'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -25,6 +26,12 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
       - run: bundle check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

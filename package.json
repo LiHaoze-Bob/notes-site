@@ -1,0 +1,19 @@
+{
+  "name": "sychostar-notes-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "check": "astro check"
+  },
+  "engines": { "node": ">=22.12.0" },
+  "dependencies": {
+    "astro": "6.4.8",
+    "astro-pure": "1.4.9",
+    "@astrojs/check": "0.9.9",
+    "@astrojs/rss": "4.0.18",
+    "medium-zoom": "1.1.0",
+    "typescript": "6.0.3",
+    "unocss": "66.10.5"
+  }
+}
