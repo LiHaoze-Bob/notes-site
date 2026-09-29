@@ -46,7 +46,7 @@ tab: 例子
 
 [[Lecture10#章节]]
 ''')
-    (folder / 'Lecture10.md').write_text('---\npublish: true\n---\n# 第十讲\n\n## 章节\n正文。')
+    (folder / 'Lecture10.md').write_text('---\npublish: true\ntags: [AI/Agent]\n---\n# 第十讲\n\n## 章节\n正文。')
     (folder / '秘密.md').write_text('---\npublish: false\n---\nPRIVATE_SENTINEL')
     cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
     for section, tag in [('reading', '阅读'), ('knowledge', '工具')]:
@@ -113,3 +113,9 @@ def test_pure_production_build_has_search_navigation_dates_and_assets(tmp_path):
         assert [a.get_text(strip=True) for a in listing.select('#sidebar .section-tags li a')] == [tag]
         assert listing.select_one('#sidebar .all-tags')['href'] == '/notes-site/tags/'
     assert not soup.select_one('.section-tags')  # Article pages keep their table of contents.
+    tags = BeautifulSoup((site / 'tags/index.html').read_text(), 'html.parser')
+    chips = tags.select('.tag-cloud .tag-chip')
+    assert len(chips) == 3
+    assert chips[0]['href'] == '/notes-site/tags/ai-agent/'
+    assert [chip.select_one('.tag-count').get_text() for chip in chips] == ['2', '1', '1']
+    assert not tags.select_one('#sidebar')

@@ -6,6 +6,7 @@ import '../../site-template/assets/css/about.css'
 import Home from '../components/Home.astro'
 import PageViews from '../components/PageViews.astro'
 import SectionTags from '../components/SectionTags.astro'
+import TagsPage from '../components/TagsPage.astro'
 import { pages, notes, date, type NotePage } from '../lib/content'
 import { href } from '../site.config'
 
@@ -20,7 +21,7 @@ interface Props { page?: NotePage; current?: number }
 const { page, current } = Astro.props
 const isSection = page && ['courses', 'reading', 'knowledge'].includes(page.route)
 ---
-{current ? <Home {current} /> : page?.route === 'about' ? (
+{current ? <Home {current} /> : page?.route === 'tags' ? <TagsPage /> : page?.route === 'about' ? (
   <BaseLayout meta={{ title: page.title }}>
     <main class='about-page' data-pagefind-body>
       <h1 data-pagefind-meta='title'>{page.title}</h1>

@@ -1,21 +1,10 @@
 ---
-import { notes } from '../lib/content'
+import { collectTags, notes } from '../lib/content'
 import { href } from '../site.config'
 
 interface Props { section: string }
 const { section } = Astro.props
-const tags = new Map<string, { title: string; url: string; count: number }>()
-for (const note of notes.filter(note => note.route.startsWith(`${section}/`))) {
-  const seen = new Set<string>()
-  for (const tag of note.tagLinks || []) {
-    if (seen.has(tag.url)) continue
-    seen.add(tag.url)
-    const entry = tags.get(tag.url)
-    if (entry) entry.count++
-    else tags.set(tag.url, { ...tag, count: 1 })
-  }
-}
-const sortedTags = [...tags.values()].sort((a, b) => b.count - a.count || a.title.localeCompare(b.title, 'zh-CN'))
+const sortedTags = collectTags(notes.filter(note => note.route.startsWith(`${section}/`)))
 ---
 <section class='section-tags' aria-labelledby='section-tags-heading' data-pagefind-ignore>
   <h2 id='section-tags-heading'><i class='fa-solid fa-tags' aria-hidden='true'></i> Tags</h2>

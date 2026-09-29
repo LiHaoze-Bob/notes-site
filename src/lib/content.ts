@@ -23,6 +23,22 @@ const data = JSON.parse(readFileSync(process.env.ASTRO_CONTENT_FILE || '.runtime
 export const pages: NotePage[] = data.pages
 export const notes = pages.filter(page => page.isNote).sort((a, b) =>
   Date.parse(b.publishedAt || '') - Date.parse(a.publishedAt || '') || a.route.localeCompare(b.route))
+
+export function collectTags(articles: NotePage[]) {
+  const tags = new Map<string, { title: string; url: string; count: number }>()
+  for (const note of articles) {
+    const seen = new Set<string>()
+    for (const tag of note.tagLinks || []) {
+      if (seen.has(tag.url)) continue
+      seen.add(tag.url)
+      const entry = tags.get(tag.url)
+      if (entry) entry.count++
+      else tags.set(tag.url, { ...tag, count: 1 })
+    }
+  }
+  return [...tags.values()].sort((a, b) => b.count - a.count || a.title.localeCompare(b.title, 'zh-CN'))
+}
+
 export const date = (value: string) => new Intl.DateTimeFormat('en-US', {
   month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Shanghai'
 }).format(new Date(value))
