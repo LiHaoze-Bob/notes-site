@@ -65,7 +65,7 @@ cp local.example.toml local.toml
 
 ## 网站与主题
 
-使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页参考 [Arthals' ink](https://arthals.ink/) 的居中头像、淡色渐变与分栏布局，展示个人介绍、最新 10 篇笔记和教育经历卡片；窄屏改为单栏。头像支持悬浮放大，教育卡片带学校标志和官网链接，悬浮或键盘聚焦时浮起；减少动态效果的系统偏好会关闭位移动画。顶部依次为 **Course / Reading / Tech / Tags / About**。Tags 汇总公开笔记的标签，点击标签可查看对应文章。图片放大、代码复制、MathJax 公式和 RSS 保留。
+使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页参考 [Arthals' ink](https://arthals.ink/) 的居中头像、淡色渐变与分栏布局，展示个人介绍、最新 10 篇笔记和教育经历卡片；窄屏改为单栏。头像支持悬浮放大，教育卡片带学校标志和官网链接，悬浮或键盘聚焦时浮起；减少动态效果的系统偏好会关闭位移动画。顶部依次为 **Course / Reading / Tech / About**。Course、Reading、Tech 栏目首页右侧显示本栏目公开笔记的 Tags 标签云，按使用次数排序，点击可进入标签文章页；窄屏通过侧栏按钮展开。没有标签时显示空状态，View all 可进入全站标签汇总。图片放大、代码复制、MathJax 公式和 RSS 保留。
 
 - `src/site.config.ts`：Pure 的站名、简介、导航、社交链接和功能设置。
 - `src/layouts/`、`src/components/`、`src/styles/`：Pure 页面、首页列表和笔记样式。

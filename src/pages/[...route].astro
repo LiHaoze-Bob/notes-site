@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import '../../site-template/assets/css/about.css'
 import Home from '../components/Home.astro'
 import PageViews from '../components/PageViews.astro'
+import SectionTags from '../components/SectionTags.astro'
 import { pages, notes, date, type NotePage } from '../lib/content'
 import { href } from '../site.config'
 
@@ -17,6 +18,7 @@ export function getStaticPaths() {
 }
 interface Props { page?: NotePage; current?: number }
 const { page, current } = Astro.props
+const isSection = page && ['courses', 'reading', 'knowledge'].includes(page.route)
 ---
 {current ? <Home {current} /> : page?.route === 'about' ? (
   <BaseLayout meta={{ title: page.title }}>
@@ -28,7 +30,9 @@ const { page, current } = Astro.props
   </BaseLayout>
 ) : page && (
   <ContentLayout meta={{ title: page.title, description: page.description }} back={href('/')} math={page.html.includes('arithmatex')}>
-    {page.headings.length > 0 && <TOC headings={page.headings} slot='sidebar' />}
+    <Fragment slot='sidebar'>
+      {isSection ? <SectionTags section={page.route} /> : page.headings.length > 0 && <TOC headings={page.headings} />}
+    </Fragment>
     <Fragment slot='header'>
       <nav id='breadcrumb' class='note-breadcrumbs' aria-label='当前位置'>
         <a href={href('/')}>Home</a>

@@ -23,7 +23,6 @@ export const theme: ThemeUserConfig = {
       { title: 'Course', link: href('/courses/') },
       { title: 'Reading', link: href('/reading/') },
       { title: 'Tech', link: href('/knowledge/') },
-      { title: 'Tags', link: href('/tags/') },
       { title: 'About', link: href('/about/') }
     ]
   },

@@ -49,6 +49,11 @@ tab: 例子
     (folder / 'Lecture10.md').write_text('---\npublish: true\n---\n# 第十讲\n\n## 章节\n正文。')
     (folder / '秘密.md').write_text('---\npublish: false\n---\nPRIVATE_SENTINEL')
     cfg = {'site': {'name': 'test'}, 'sources': [{'path': '课程', 'destination': 'courses'}]}
+    for section, tag in [('reading', '阅读'), ('knowledge', '工具')]:
+        section_folder = vault / section
+        section_folder.mkdir()
+        (section_folder / '示例.md').write_text(f'---\npublish: true\ntags: [{tag}]\n---\n# {section}\n')
+        cfg['sources'].append({'path': section, 'destination': section})
     docs = tmp_path / 'docs'
     Exporter(vault, cfg, ROOT / 'site-template').export(docs, {
         'courses/测试/Lecture2 中文.md': {'published_at': '2026-09-14T12:30:00+08:00',
@@ -88,7 +93,7 @@ def test_pure_production_build_has_search_navigation_dates_and_assets(tmp_path):
     assert build_snapshot(docs, work, theme='pure') >= 8
     site = work / 'site'
     soup = BeautifulSoup((site / 'courses/测试/Lecture2 中文/index.html').read_text(), 'html.parser')
-    assert [a.get_text(strip=True) for a in soup.select('#headerExpandContent > div > a')] == ['Course', 'Reading', 'Tech', 'Tags', 'About']
+    assert [a.get_text(strip=True) for a in soup.select('#headerExpandContent > div > a')] == ['Course', 'Reading', 'Tech', 'About']
     assert soup.select_one('toc-heading a')['href'] == '#中文章节'
     assert 'Posted Sep 14, 2026' in soup.select_one('.post-meta').get_text(' ', strip=True)
     assert 'Updated Sep 16, 2026' in soup.select_one('.post-meta').get_text(' ', strip=True)
@@ -100,3 +105,11 @@ def test_pure_production_build_has_search_navigation_dates_and_assets(tmp_path):
     assert (site / 'tags/ai-agent/index.html').is_file()
     assert (site / 'feed.xml').is_file()
     assert (site / 'assets/lib/fontawesome-free/webfonts/fa-solid-900.woff2').is_file()
+    course = BeautifulSoup((site / 'courses/index.html').read_text(), 'html.parser')
+    assert course.select_one('#sidebar .section-tags h2').get_text(strip=True) == 'Tags'
+    assert course.select_one('#sidebar .section-tags li a')['href'] == '/notes-site/tags/ai-agent/'
+    for section, tag in [('courses', 'AI/Agent'), ('reading', '阅读'), ('knowledge', '工具')]:
+        listing = BeautifulSoup((site / section / 'index.html').read_text(), 'html.parser')
+        assert [a.get_text(strip=True) for a in listing.select('#sidebar .section-tags li a')] == [tag]
+        assert listing.select_one('#sidebar .all-tags')['href'] == '/notes-site/tags/'
+    assert not soup.select_one('.section-tags')  # Article pages keep their table of contents.
