@@ -65,7 +65,7 @@ cp local.example.toml local.toml
 
 ## 网站与主题
 
-使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页参考 [Arthals' ink](https://arthals.ink/) 的居中头像、淡色渐变与分栏布局，展示个人介绍、最新 10 篇笔记、笔记分类和教育信息；窄屏改为单栏。顶部依次为 **Course / Reading / Tech / About**。图片放大、代码复制、MathJax 公式和 RSS 保留。
+使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页参考 [Arthals' ink](https://arthals.ink/) 的居中头像、淡色渐变与分栏布局，展示个人介绍、最新 10 篇笔记和教育经历卡片；窄屏改为单栏。头像支持悬浮放大，教育卡片带学校标志和官网链接，悬浮或键盘聚焦时浮起；减少动态效果的系统偏好会关闭位移动画。顶部依次为 **Course / Reading / Tech / About**。图片放大、代码复制、MathJax 公式和 RSS 保留。
 
 - `src/site.config.ts`：Pure 的站名、简介、导航、社交链接和功能设置。
 - `src/layouts/`、`src/components/`、`src/styles/`：Pure 页面、首页列表和笔记样式。
@@ -81,7 +81,20 @@ cp local.example.toml local.toml
 
 文章底部的 Older / Newer 只在同一文件夹的公开文章之间跳转，按原文件名自然排序（例如 Lecture2 在 Lecture10 前），不受文章日期、显示标题或 `nav_order` 影响，也不会进入子文件夹。Older 指向前一篇，Newer 指向后一篇；到达首尾时对应按钮禁用。
 
-首页以日期和标题组成紧凑文章列表，点击 More notes 进入后续分页；原分页网址保持可用。后续分页保留详细列表，自动提取正文最外层级的前 4 个不同章节标题，以「 · 」分隔；忽略代码和提示块内的标题、重复的文章标题及公式，没有章节标题时省略摘要。详细列表底部显示完整公开目录（如 `Course / FDS-ZJU / notes`），目录名称沿用 `publish.toml` 的 `labels`，长路径允许换行。首页介绍与栏目在 `src/components/Home.astro` 维护，首页专用样式位于 `src/styles/home.css`；分类数量由公开笔记自动统计。
+首页以日期和标题组成紧凑文章列表，点击 More notes 进入后续分页；原分页网址保持可用。后续分页保留详细列表，自动提取正文最外层级的前 4 个不同章节标题，以「 · 」分隔；忽略代码和提示块内的标题、重复的文章标题及公式，没有章节标题时省略摘要。详细列表底部显示完整公开目录（如 `Course / FDS-ZJU / notes`），目录名称沿用 `publish.toml` 的 `labels`，长路径允许换行。首页介绍与教育经历在 `src/components/Home.astro` 维护，首页专用样式位于 `src/styles/home.css`。
+
+### 添加首页随机名言
+
+编辑 `src/data/quotes.json`，在数组里填入句子，每句使用英文双引号，句子之间用逗号隔开。例如（下面是填写格式，不会自动展示到网站）：
+
+```json
+[
+  "你的第一句话。",
+  "你的第二句话。——作者"
+]
+```
+
+保存并重新构建、提交发布后，每次打开或刷新首页会从列表中随机显示一句，位置在教育经历下方。使用本地句子，不依赖第三方接口；关闭 JavaScript 时显示第一句。空数组 `[]` 会完全隐藏名言区域，空白句子会被忽略。最后一句后面不要加逗号；句子里的英文双引号需写为 `\"`。
 
 顶部路径导航按笔记所在目录显示完整层级，例如 Home › Course › FDS-ZJU › notes › 算法分析基础，每个上级目录均可点击返回；窄窗口中保留该路径并支持横向滚动，不再显示笼统的 Post。目录名称优先使用 `labels`，其次使用公开目录首页的标题，最后使用文件夹名；顶层栏目使用侧栏名称。
 

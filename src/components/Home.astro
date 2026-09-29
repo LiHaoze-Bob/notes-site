@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import NoteList from './NoteList.astro'
+import RandomQuote from './RandomQuote.astro'
 import { Icon } from 'astro-pure/user'
 import { date, notes } from '../lib/content'
 import config, { href } from '../site.config'
@@ -8,11 +9,10 @@ import '../styles/home.css'
 interface Props { current?: number }
 const { current = 1 } = Astro.props
 const count = Math.max(1, Math.ceil(notes.length / 10))
-const collections = [
-  { title: 'Course', description: '课堂内外的学习笔记', path: 'courses', icon: 'fa-book-open' },
-  { title: 'Reading', description: '书籍与论文的阅读记录', path: 'reading', icon: 'fa-bookmark' },
-  { title: 'Tech', description: '技术探索与工具实践', path: 'knowledge', icon: 'fa-code' }
-].map(collection => ({ ...collection, count: notes.filter(note => note.route.startsWith(collection.path + '/')).length }))
+const education = [
+  { school: '浙江大学', program: '计算机科学与技术 · 本科', period: '2025.7 – Present', url: 'https://www.zju.edu.cn/', image: 'zju.png' },
+  { school: '浙江省杭州高级中学', program: '高中', period: '2022.9 – 2025.7', url: 'http://www.hanggao.net/', image: 'hanggao.jpg' }
+]
 ---
 <BaseLayout meta={{ title: current === 1 ? '' : `Page ${current}` }} home={current === 1}>
   {current === 1 ? <main class='home'>
@@ -29,8 +29,8 @@ const collections = [
       <section class='home-section' aria-labelledby='home-about'>
         <h2 id='home-about'>About</h2>
         <div class='home-section-content home-about'>
-          <p class='home-role'>CS student / Curious learner</p>
-          <p>你好，我是 {config.author}，一名浙江大学的计算机专业本科生。</p>
+          <p class='home-role'>Developer / CS student / Curious learner</p>
+          <p>你好，我是 {config.author}，一名浙江大学的计算机科学与技术专业本科生。</p>
           <p>正在探索深度学习、AI Agents，以及一切让我好奇的事物。</p>
           <p>这里记录我的课程笔记、技术积累与阅读思考。</p>
           <div class='home-section-action'><a class='home-more' href={href('/about/')}>More about me <span aria-hidden='true'>→</span></a></div>
@@ -54,30 +54,19 @@ const collections = [
         </div>
       </section>
 
-      <section class='home-section' aria-labelledby='home-notebook'>
-        <h2 id='home-notebook'>Notebook</h2>
-        <div class='home-section-content'>
-          <ul class='home-collections'>
-            {collections.map(collection => <li>
-              <a class='home-collection' href={href(`/${collection.path}/`)}>
-                <span class='home-collection-icon'><i class:list={['fa-solid', collection.icon]} aria-hidden='true'></i></span>
-                <span class='home-collection-info'><span class='home-collection-title'>{collection.title}</span><span class='home-collection-description'>{collection.description}</span></span>
-                <span class='home-collection-count'>{collection.count} 篇</span>
-                <span class='home-chevron' aria-hidden='true'>›</span>
-              </a>
-            </li>)}
-          </ul>
-        </div>
-      </section>
-
       <section class='home-section' aria-labelledby='home-education'>
         <h2 id='home-education'>Education</h2>
-        <div class='home-section-content home-education'>
-          <span class='home-education-icon'><i class='fa-solid fa-graduation-cap' aria-hidden='true'></i></span>
-          <div><h3>浙江大学</h3><p>计算机专业 · 本科在读</p><span>Zhejiang University</span></div>
-        </div>
+        <ul class='home-section-content home-education'>
+          {education.map(item => <li>
+            <a class='education-card' href={item.url} target='_blank' rel='noopener noreferrer' title={`访问${item.school}官网（新窗口）`}>
+              <div class='education-copy'><h3>{item.school}</h3><p>{item.program}</p><p>{item.period}</p></div>
+              <div class='education-art' aria-hidden='true'><img src={href(`/assets/images/education/${item.image}`)} alt='' loading='lazy' decoding='async' /></div>
+            </a>
+          </li>)}
+        </ul>
       </section>
     </div>
+    <RandomQuote />
   </main> : <main class='home-notes'>
     <div class='section-heading'><h1>Notes <small>· Page {current}</small></h1><span>{notes.length} 篇公开笔记</span></div>
     <NoteList notes={notes.slice((current - 1) * 10, current * 10)} {current} {count} />

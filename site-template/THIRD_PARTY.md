@@ -13,3 +13,10 @@ Chirpy layouts, styles and JavaScript are provided by the MIT-licensed `jekyll-t
 `_includes/topbar.html` adapts Chirpy 7.6.0's top bar to show the exported folder hierarchy in note and directory breadcrumbs, retaining the theme's navigation for other pages.
 
 `assets/css/breadcrumbs.css` keeps that hierarchy visible in Chirpy's compact top bar.
+
+## Education images
+
+School marks are used only to identify the author's education; they are not covered by the theme's software license. The original image files are retained without modification; the homepage crops and fades them with CSS.
+
+- `assets/images/education/hanggao.jpg`: [Hangzhou High School official website](http://www.hanggao.net/), [original image](http://www.hanggao.net/admin/uploadotherall/site/gyhanggao/xiaoyoulogo.jpg).
+- `assets/images/education/zju.png`: Zhejiang University mark, via [Wikipedia's file page](https://zh.wikipedia.org/wiki/File:Zhejiang_University_Logo.svg), [PNG image](https://thumb.wikimedia.org/wikipedia/zh/thumb/1/16/Zhejiang_University_Logo.svg/250px-Zhejiang_University_Logo.svg.png). See also the university's [official description of its mark](https://www.zju.edu.cn/xb/listm.htm).

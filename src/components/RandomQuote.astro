@@ -1,0 +1,18 @@
+---
+import quoteLines from '../data/quotes.json'
+
+// An empty list leaves no placeholder or empty space on the homepage.
+const quotes = (quoteLines as string[]).map(line => line.trim()).filter(Boolean)
+---
+{quotes.length > 0 && <div class='home-quote-wrap'>
+  <p class='home-quote' data-home-quotes={JSON.stringify(quotes)}><span>{quotes[0]}</span></p>
+</div>}
+
+<script>
+  const quote = document.querySelector<HTMLElement>('[data-home-quotes]')
+  if (quote) {
+    const lines: string[] = JSON.parse(quote.dataset.homeQuotes || '[]')
+    const text = quote.querySelector('span')
+    if (text && lines.length) text.textContent = lines[Math.floor(Math.random() * lines.length)]
+  }
+</script>
