@@ -6,8 +6,8 @@ import config, { href } from '../site.config'
 import '../styles/app.css'
 import '../styles/site.css'
 
-interface Props { meta: SiteMeta; highlightColor?: string; math?: boolean }
-const { meta, math = false } = Astro.props
+interface Props { meta: SiteMeta; highlightColor?: string; math?: boolean; home?: boolean }
+const { meta, math = false, home = false } = Astro.props
 const title = meta.title ? `${meta.title} • ${config.title}` : config.title
 const canonical = new URL(Astro.url.pathname, Astro.site)
 ---
@@ -31,7 +31,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     <link rel='stylesheet' href={href('/assets/css/tabsdown.css')} />
     <ThemeProvider />
   </head>
-  <body class='flex justify-center bg-background text-foreground'>
+  <body class:list={['flex justify-center bg-background text-foreground', { 'home-page': home }]}>
     <a class='skip-link' href='#main-content'>跳到正文</a>
     <div id='main-container' class='w-full max-w-[70rem] min-h-[100dvh] flex flex-col justify-between'>
       <Header />

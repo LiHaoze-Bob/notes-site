@@ -1,19 +1,85 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
 import NoteList from './NoteList.astro'
-import { notes } from '../lib/content'
-import { href } from '../site.config'
+import { Icon } from 'astro-pure/user'
+import { date, notes } from '../lib/content'
+import config, { href } from '../site.config'
+import '../styles/home.css'
 interface Props { current?: number }
 const { current = 1 } = Astro.props
 const count = Math.max(1, Math.ceil(notes.length / 10))
+const collections = [
+  { title: 'Course', description: '课堂内外的学习笔记', path: 'courses', icon: 'fa-book-open' },
+  { title: 'Reading', description: '书籍与论文的阅读记录', path: 'reading', icon: 'fa-bookmark' },
+  { title: 'Tech', description: '技术探索与工具实践', path: 'knowledge', icon: 'fa-code' }
+].map(collection => ({ ...collection, count: notes.filter(note => note.route.startsWith(collection.path + '/')).length }))
 ---
-<BaseLayout meta={{ title: current === 1 ? '' : `Page ${current}` }}>
-  {current === 1 && <section class='home-intro'>
-    <div><p class='eyebrow'>NOTES & IDEAS</p><h1>sychostar</h1><p class='home-description'>课程笔记、技术积累与阅读记录。</p><p class='home-bio'>A CS student at Zhejiang University.</p></div>
-    <img src={href('/assets/images/avatar.png')} alt='sychostar' width='88' height='88' />
-  </section>}
-  <main class='home-notes'>
-    <div class='section-heading'><h2>Latest notes</h2><span>{notes.length} 篇公开笔记</span></div>
+<BaseLayout meta={{ title: current === 1 ? '' : `Page ${current}` }} home={current === 1}>
+  {current === 1 ? <main class='home'>
+    <header class='home-profile'>
+      <img class='home-avatar' src={href('/assets/images/avatar.png')} alt={`${config.author} 的头像`} width='104' height='104' fetchpriority='high' />
+      <h1>{config.author}</h1>
+      <div class='home-profile-links'>
+        <span><i class='fa-solid fa-graduation-cap' aria-hidden='true'></i> Zhejiang University</span>
+        <a href='https://github.com/LiHaoze-Bob' rel='me'><Icon name='github' /> GitHub</a>
+      </div>
+    </header>
+
+    <div class='home-sections'>
+      <section class='home-section' aria-labelledby='home-about'>
+        <h2 id='home-about'>About</h2>
+        <div class='home-section-content home-about'>
+          <p class='home-role'>CS student / Curious learner</p>
+          <p>你好，我是 {config.author}，一名浙江大学的计算机专业本科生。</p>
+          <p>正在探索深度学习、AI Agents，以及一切让我好奇的事物。</p>
+          <p>这里记录我的课程笔记、技术积累与阅读思考。</p>
+          <div class='home-section-action'><a class='home-more' href={href('/about/')}>More about me <span aria-hidden='true'>→</span></a></div>
+        </div>
+      </section>
+
+      <section class='home-section' aria-labelledby='home-posts'>
+        <div class='home-section-label'><h2 id='home-posts'>Posts</h2><span>{notes.length} 篇笔记</span></div>
+        <div class='home-section-content'>
+          <ul class='home-posts' id='post-list'>
+            {notes.slice(0, 10).map(note => <li>
+              <a class='home-post' href={note.url}>
+                {note.publishedAt && <time datetime={note.publishedAt}>{date(note.publishedAt)}</time>}
+                <span class='home-post-title'>{note.title}</span>
+                <span class='home-chevron' aria-hidden='true'>›</span>
+              </a>
+            </li>)}
+          </ul>
+          {notes.length === 0 && <p class='home-empty'>笔记正在整理中。</p>}
+          {count > 1 && <div class='home-section-action'><a class='home-more' href={href('/page2/')}>More notes <span aria-hidden='true'>→</span></a></div>}
+        </div>
+      </section>
+
+      <section class='home-section' aria-labelledby='home-notebook'>
+        <h2 id='home-notebook'>Notebook</h2>
+        <div class='home-section-content'>
+          <ul class='home-collections'>
+            {collections.map(collection => <li>
+              <a class='home-collection' href={href(`/${collection.path}/`)}>
+                <span class='home-collection-icon'><i class:list={['fa-solid', collection.icon]} aria-hidden='true'></i></span>
+                <span class='home-collection-info'><span class='home-collection-title'>{collection.title}</span><span class='home-collection-description'>{collection.description}</span></span>
+                <span class='home-collection-count'>{collection.count} 篇</span>
+                <span class='home-chevron' aria-hidden='true'>›</span>
+              </a>
+            </li>)}
+          </ul>
+        </div>
+      </section>
+
+      <section class='home-section' aria-labelledby='home-education'>
+        <h2 id='home-education'>Education</h2>
+        <div class='home-section-content home-education'>
+          <span class='home-education-icon'><i class='fa-solid fa-graduation-cap' aria-hidden='true'></i></span>
+          <div><h3>浙江大学</h3><p>计算机专业 · 本科在读</p><span>Zhejiang University</span></div>
+        </div>
+      </section>
+    </div>
+  </main> : <main class='home-notes'>
+    <div class='section-heading'><h1>Notes <small>· Page {current}</small></h1><span>{notes.length} 篇公开笔记</span></div>
     <NoteList notes={notes.slice((current - 1) * 10, current * 10)} {current} {count} />
-  </main>
+  </main>}
 </BaseLayout>
