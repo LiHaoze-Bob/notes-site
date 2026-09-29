@@ -51,8 +51,9 @@
 :is(.dark, [data-mode='dark']) .about-snake-light { display: none; }
 :is(.dark, [data-mode='dark']) .about-snake-dark { display: block; }
 @media (prefers-color-scheme: dark) {
-  html:not([data-mode]):not(.light):not(.dark) .about-snake-light { display: none; }
-  html:not([data-mode]):not(.light):not(.dark) .about-snake-dark { display: block; }
+  /* Pure resolves system/user preferences into .dark; only Chirpy needs this fallback. */
+  html:not([data-site-theme='pure']):not([data-mode]):not(.dark) .about-snake-light { display: none; }
+  html:not([data-site-theme='pure']):not([data-mode]):not(.dark) .about-snake-dark { display: block; }
 }
 @media (max-width: 767px) {
   .about-page { margin: 1.25rem auto 3rem; }
