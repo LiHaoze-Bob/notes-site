@@ -65,7 +65,7 @@ cp local.example.toml local.toml
 
 ## 网站与主题
 
-使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页参考 [Arthals' ink](https://arthals.ink/) 的居中头像、淡色渐变与分栏布局，展示个人介绍、最新 10 篇笔记和教育经历卡片；窄屏改为单栏。头像支持悬浮放大，教育卡片带学校标志和官网链接，悬浮或键盘聚焦时浮起；减少动态效果的系统偏好会关闭位移动画。顶部依次为 **Course / Reading / Tech / About**。图片放大、代码复制、MathJax 公式和 RSS 保留。
+使用 [Astro Theme Pure](https://github.com/cworld1/astro-theme-pure) 的原生组件、顶部导航、阅读布局、右侧目录、明暗切换和 Pagefind 全文搜索。首页参考 [Arthals' ink](https://arthals.ink/) 的居中头像、淡色渐变与分栏布局，展示个人介绍、最新 10 篇笔记和教育经历卡片；窄屏改为单栏。头像支持悬浮放大，教育卡片带学校标志和官网链接，悬浮或键盘聚焦时浮起；减少动态效果的系统偏好会关闭位移动画。顶部依次为 **Course / Reading / Tech / Tags / About**。Tags 汇总公开笔记的标签，点击标签可查看对应文章。图片放大、代码复制、MathJax 公式和 RSS 保留。
 
 - `src/site.config.ts`：Pure 的站名、简介、导航、社交链接和功能设置。
 - `src/layouts/`、`src/components/`、`src/styles/`：Pure 页面、首页列表和笔记样式。
@@ -74,6 +74,8 @@ cp local.example.toml local.toml
 - `site-template/_tabs/about.md`：两种主题共用的 About 正文。
 - `site-template/assets/`：共用的头像、字体、Callout、Tabsdown 和 MathJax 资源。
 - `_config.yml` 和其余 `site-template/` 文件：保留的 Chirpy 设置及模板。
+
+About 的 Steam 卡片使用 `site-template/_data/steam.json` 保存公开主页快照，展示头像、等级、徽章、游戏数量、近两周时长和最近三款游戏。GitHub Actions 每次发布前运行 `scripts/steam.py` 刷新；网络错误或限流时保留旧快照及其原始更新时间。卡片不表示实时在线状态，也不把最近三款游戏时长当作全库总时长。本地刷新可运行 `.venv/bin/python scripts/steam.py`，随后运行 `.venv/bin/python scripts/site.py build`；无需 Steam API 密钥。
 
 课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 按原目录层级显示文件夹和笔记；Tech 的栏目首页不展示深层文件夹，而是在一级分组下直接列出带文章图标的公开笔记；Reading 则保留完整的可折叠目录树和文章图标。笔记的 URL 和顶部路径导航仍保留完整目录层级。
 

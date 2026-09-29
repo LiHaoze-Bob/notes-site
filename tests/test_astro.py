@@ -88,7 +88,7 @@ def test_pure_production_build_has_search_navigation_dates_and_assets(tmp_path):
     assert build_snapshot(docs, work, theme='pure') >= 8
     site = work / 'site'
     soup = BeautifulSoup((site / 'courses/测试/Lecture2 中文/index.html').read_text(), 'html.parser')
-    assert [a.get_text(strip=True) for a in soup.select('#headerExpandContent > div > a')] == ['Course', 'Reading', 'Tech', 'About']
+    assert [a.get_text(strip=True) for a in soup.select('#headerExpandContent > div > a')] == ['Course', 'Reading', 'Tech', 'Tags', 'About']
     assert soup.select_one('toc-heading a')['href'] == '#中文章节'
     assert 'Posted Sep 14, 2026' in soup.select_one('.post-meta').get_text(' ', strip=True)
     assert 'Updated Sep 16, 2026' in soup.select_one('.post-meta').get_text(' ', strip=True)
