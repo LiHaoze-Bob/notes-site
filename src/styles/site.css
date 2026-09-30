@@ -10,7 +10,14 @@
   font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   scroll-behavior: smooth;
 }
-body { line-height: 1.75; }
+body {
+  line-height: 1.75;
+  background-image: linear-gradient(180deg, hsl(var(--primary) / .17), hsl(var(--background) / 0) 960px);
+  background-repeat: no-repeat;
+}
+.dark body {
+  background-image: linear-gradient(180deg, hsl(205 40% 16% / .7), hsl(var(--background) / 0) 960px);
+}
 button, a, summary { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 4px; }
 #main-container { padding: 1.5rem 2.5rem 0; }

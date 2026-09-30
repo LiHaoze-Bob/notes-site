@@ -1,11 +1,4 @@
 /* Personal homepage: centered profile and a quiet, two-column reading rhythm. */
-.home-page {
-  background-image: linear-gradient(180deg, hsl(var(--primary) / .17), hsl(var(--background) / 0) 960px);
-  background-repeat: no-repeat;
-}
-.dark .home-page {
-  background-image: linear-gradient(180deg, hsl(205 40% 16% / .7), hsl(var(--background) / 0) 960px);
-}
 .home { width: 100%; }
 .home-profile {
   display: flex;
