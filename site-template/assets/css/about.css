@@ -48,6 +48,8 @@
 .steam-game > span { display: block; font-size: .6rem; color: var(--text-muted-color); }
 .steam-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .3rem .7rem; padding-top: .85rem; margin-top: .85rem; border-top: 1px solid var(--main-border-color); font-size: .6rem; color: var(--text-muted-color); }
 .steam-footer a { color: inherit; }
+.steam-updates { display: flex; flex-direction: column; gap: .15rem; }
+.steam-card [hidden] { display: none; }
 :is(.dark, [data-mode='dark']) .about-snake-light { display: none; }
 :is(.dark, [data-mode='dark']) .about-snake-dark { display: block; }
 @media (prefers-color-scheme: dark) {

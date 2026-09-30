@@ -1,0 +1,9 @@
+name = "notes-site-steam"
+main = "worker.mjs"
+compatibility_date = "2026-09-29"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://lihaoze-bob.github.io"
+
+# Add STEAM_API_KEY as a Secret in Cloudflare, never as a variable here.

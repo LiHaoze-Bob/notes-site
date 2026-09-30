@@ -13,3 +13,6 @@ vendor/bundle/
 .sass-cache/
 node_modules/
 .astro/
+.wrangler/
+.dev.vars*
+.env*

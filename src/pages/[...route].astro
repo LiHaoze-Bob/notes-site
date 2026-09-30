@@ -28,6 +28,7 @@ const isSection = page && ['courses', 'reading', 'knowledge'].includes(page.rout
       <div class='post-meta about-meta'><PageViews /></div>
       <Fragment set:html={page.html} />
     </main>
+    <script is:inline defer src={href('/assets/js/steam.js')}></script>
   </BaseLayout>
 ) : page && (
   <ContentLayout meta={{ title: page.title, description: page.description }} back={href('/')} math={page.html.includes('arithmatex')}>

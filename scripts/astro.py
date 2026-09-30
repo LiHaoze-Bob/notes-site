@@ -126,5 +126,6 @@ def stage(docs: Path, work: Path, template: Path, settings: dict, labels: dict) 
             css = css.replace(':root[data-bs-theme="dark"]', ':root.dark')
         (public / 'assets/css' / name).write_text(css)
     (public / 'assets/js').mkdir(parents=True, exist_ok=True)
-    shutil.copy2(template / 'assets/js/tabsdown.js', public / 'assets/js/tabsdown.js')
+    for name in ('tabsdown.js', 'steam.js'):
+        shutil.copy2(template / 'assets/js' / name, public / 'assets/js' / name)
     return data

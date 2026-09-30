@@ -75,7 +75,9 @@ cp local.example.toml local.toml
 - `site-template/assets/`：共用的头像、字体、Callout、Tabsdown 和 MathJax 资源。
 - `_config.yml` 和其余 `site-template/` 文件：保留的 Chirpy 设置及模板。
 
-About 的 Steam 卡片使用 `site-template/_data/steam.json` 保存公开主页快照，展示头像、等级、采集时的在线或游戏状态、徽章、游戏数量、近两周时长和最近三款游戏。GitHub Actions 每次发布前运行 `scripts/steam.py` 刷新；网络错误或限流时保留旧快照及其原始更新时间。卡片不表示实时在线状态，也不把最近三款游戏时长当作全库总时长。本地刷新可运行 `.venv/bin/python scripts/steam.py`，随后运行 `.venv/bin/python scripts/site.py build`；无需 Steam API 密钥。
+About 的 Steam 卡片使用 `site-template/_data/steam.json` 保存发布快照，展示头像、等级、在线或游戏状态、徽章、游戏数量、近两周时长和三款游戏。配置 `site-template/_data/steam-live.json` 的 `endpoint` 后，打开页面立即更新，可见时每 60 秒查询状态，资料缓存一小时；状态和资料分别标注采集时间，失败时保留旧数据。两种主题均支持，后台标签页暂停请求。需要部署 `workers/steam/worker.mjs` 并在 Cloudflare 配置 Steam Key，见 [部署步骤](workers/steam/README.md)。查询间隔不保证 Steam 数据的实际延迟。
+
+接口未配置或 JavaScript 不可用时显示发布快照。GitHub Actions 每次发布前运行 `scripts/steam.py`；网络错误或限流时保留旧快照及其原始更新时间。本地刷新快照可运行 `.venv/bin/python scripts/steam.py`，随后运行 `.venv/bin/python scripts/site.py build`；此快照流程无需 Steam API 密钥。近两周时长与每款游戏的累计时长各自展示，不将三款游戏时长当作全库总时长。
 
 课程使用 `/courses/`；Tech 使用 `/knowledge/`，子目录为 `/knowledge/tech/` 和 `/knowledge/tools/`；Reading 使用 `/reading/`，子目录为 `/reading/reading/` 和 `/reading/paper/`。Course 按原目录层级显示文件夹和笔记；Tech 的栏目首页不展示深层文件夹，而是在一级分组下直接列出带文章图标的公开笔记；Reading 则保留完整的可折叠目录树和文章图标。笔记的 URL 和顶部路径导航仍保留完整目录层级。
 
