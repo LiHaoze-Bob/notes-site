@@ -30,34 +30,10 @@ title: Lecture01 Introduction
 我们主要关注的是pre-training，以训练一个Llama-style的语言模型为例，data-architecture-objective-optimization
 
 
-
-$$
-\begin{aligned}
-Q_\theta(x) &= \prod_i Q_\theta(x_i \mid x_{<i}) \\
-L(\theta) &= \mathbb{E}_{x \sim P}\left[-\log Q_\theta(x)\right] \\
-&= \mathbb{E}_{x \sim P}\left[-\sum_i \log Q_\theta(x_i \mid x_{<i})\right]
-\end{aligned}
-$$
-
-
-上面的数学公式展示了构建loss function的过程：基于前文的每一个token预测下一个token准确的概率乘积，Loss就是取其负对数，按长度取平均。
-
-
 ![](../../assets/notes/4aef2bd177620589a138.png)
 
 ~~具体的模型结构会在下一个补充的lec涉及，绝不是因为我还没有完全懂~~
 
----
- 分割线，下面是对结构的剖析
-
-MLP以SwiGLU作为激活函数
-
-prenorm即是表明归一化发生在MLP和Attention之前
-
- 只做 Attention 时，模型本身不知道 token 的相对位置。RoPE 会根据位置旋转 $Q$ 和 $K$ 向量，使它们的点积包含相对位置信息。
-。。。
-
---- 
 
 对于优化，选择合适的优化器和学习率以及一些正则化方法，在ZJU的深度学习基础中已有涉及
 

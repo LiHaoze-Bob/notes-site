@@ -1,6 +1,12 @@
 {
   "notes": [
     {
+      "path": "courses/CO-ZJU/lab1.md",
+      "title": "lab1",
+      "published_at": "2026-09-30T19:40:55+08:00",
+      "content_hash": "b02576118daba76dcb295f5980cff2e1794204a64b0f4a937d0615a414c11d4d"
+    },
+    {
       "path": "courses/CS312-Stanford/index.md",
       "title": "CS312-Stanford",
       "published_at": "2026-09-24T16:07:13+08:00",
@@ -11,8 +17,8 @@
       "path": "courses/CS312-Stanford/Lecture01 Introduction.md",
       "title": "Lecture01 Introduction",
       "published_at": "2026-09-24T16:07:13+08:00",
-      "content_hash": "05412ab2fb25e21eb9e4984528d407a443e0db35c5a8940272fd77e837de1041",
-      "updated_at": "2026-09-24T16:26:21+08:00"
+      "content_hash": "3f974b440417c53f23edd66089c69517153d3f9d951cf0e726b69a64c104e69d",
+      "updated_at": "2026-09-30T19:40:55+08:00"
     },
     {
       "path": "courses/CS312-Stanford/LLMs 101.md",

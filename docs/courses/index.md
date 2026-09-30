@@ -1,5 +1,6 @@
 # 课程笔记
 
+- [CO-ZJU](CO-ZJU/index.md)
 - [CS312-Stanford](CS312-Stanford/index.md)
 - [DL-ZJU](DL-ZJU/index.md)
 - [DM-ZJU](DM-ZJU/index.md)
