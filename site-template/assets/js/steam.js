@@ -122,7 +122,7 @@
   }
   document.addEventListener('visibilitychange', resume)
   window.addEventListener('pagehide', () => { clearInterval(timer); controller?.abort() })
-  window.addEventListener('pageshow', resume)
+  window.addEventListener('pageshow', event => { if (event.persisted) resume() })
   message.textContent = '正在更新…'
   resume()
 })()

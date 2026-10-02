@@ -3,6 +3,10 @@ const STEAM_ID = '76561199304157766'
 const SITE_ORIGIN = 'https://lihaoze-bob.github.io'
 const STATES = ['offline', 'online', 'busy', 'away', 'snooze', 'trade', 'play']
 
+class SteamError extends Error {
+  constructor(code) { super(code); this.code = code }
+}
+
 function number(value) {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null
 }
@@ -16,7 +20,7 @@ function avatar(value) {
 
 export function profileData(player, now = new Date().toISOString()) {
   if (player?.steamid !== STEAM_ID || typeof player.personaname !== 'string') {
-    throw new Error('Invalid Steam profile')
+    throw new SteamError('invalid_profile')
   }
   const isPublic = player.communityvisibilitystate === 3
   const currentGame = isPublic && player.gameid && typeof player.gameextrainfo === 'string' ? player.gameextrainfo : ''
@@ -53,10 +57,11 @@ async function steam(method, parameters, key, service = 'IPlayerService') {
   url.searchParams.set('key', key)
   if (service === 'IPlayerService') url.searchParams.set('input_json', JSON.stringify(parameters))
   else for (const [name, value] of Object.entries(parameters)) url.searchParams.set(name, value)
-  const response = await fetch(url, { signal: AbortSignal.timeout(5000), redirect: 'error' })
-  if (!response.ok) throw new Error('Steam unavailable')
+  // Workers supports follow/manual only. Inspect 3xx without forwarding the key.
+  const response = await fetch(url, { signal: AbortSignal.timeout(5000), redirect: 'manual' })
+  if (!response.ok) throw new SteamError(`steam_http_${response.status}`)
   const data = await response.json()
-  if (!data.response || typeof data.response !== 'object') throw new Error('Invalid Steam response')
+  if (!data.response || typeof data.response !== 'object') throw new SteamError('invalid_response')
   return data.response
 }
 
@@ -106,9 +111,12 @@ export default {
         })
       } catch { /* Preserve the frontend's dated statistics; status can still refresh. */ }
       return reply({ ...profile, stats })
-    } catch {
-      // Never return/log upstream error text, which may include a URL containing the key.
-      return reply({ error: 'Steam temporarily unavailable' }, 502)
+    } catch (error) {
+      // Keep raw errors private and redact both the key and URLs from diagnostic logs.
+      const reason = error instanceof SteamError ? error.code : error?.name === 'TimeoutError' ? 'steam_timeout' : 'internal_error'
+      const detail = String(error?.message || '').replaceAll(String(env.STEAM_API_KEY), '[redacted]').replace(/https?:\/\/[^\s)]+/g, '[url]')
+      console.warn('Steam refresh failed:', reason, detail)
+      return reply({ error: 'Steam temporarily unavailable', reason }, 502)
     }
   },
 }
