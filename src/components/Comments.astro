@@ -2,9 +2,7 @@
 import { comments } from '../site.config'
 ---
 
-{comments.enable && <section class='comments' aria-labelledby='comments-title' data-pagefind-ignore>
-  <h2 id='comments-title'>评论</h2>
-  <p class='comments-hint'>使用 GitHub 账号登录，交流想法或指出笔记中的问题。</p>
+{comments.enable && <section id='comments-title' class='comments' aria-label='评论' data-pagefind-ignore>
   <div class='giscus'
     data-repo={comments.repo}
     data-repo-id={comments.repoId}
@@ -60,9 +58,7 @@ import { comments } from '../site.config'
 
 <style>
   .comments { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); }
-  h2 { font-size: 1.25rem; font-weight: 600; }
-  .comments-hint, .comments-fallback { color: hsl(var(--muted-foreground)); font-size: .875rem; line-height: 1.7; }
-  .comments-hint { margin: .5rem 0 1.25rem; }
+  .comments-fallback { color: hsl(var(--muted-foreground)); font-size: .875rem; line-height: 1.7; }
   .comments-fallback { margin-top: .75rem; }
   a { text-decoration: underline; text-underline-offset: 3px; }
 </style>
