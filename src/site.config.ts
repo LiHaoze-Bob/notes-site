@@ -3,6 +3,14 @@ import type { Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/
 export const base = '/notes-site'
 export const href = (path: string) => base + (path.startsWith('/') ? path : '/' + path)
 
+export const comments = {
+  enable: true,
+  repo: 'LiHaoze-Bob/notes-site',
+  repoId: 'R_kgDOUaolUQ',
+  category: 'Announcements',
+  categoryId: 'DIC_kwDOUaolUc4DG49S'
+}
+
 export const theme: ThemeUserConfig = {
   title: 'sychostar',
   author: 'sychostar',

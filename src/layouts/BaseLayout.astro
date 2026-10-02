@@ -24,6 +24,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site)
     <meta property='og:url' content={canonical} />
     <meta property='og:image' content={new URL(href('/assets/images/avatar.png'), Astro.site)} />
     <link rel='canonical' href={canonical} />
+    <meta name='giscus:backlink' content={canonical} />
     <link rel='icon' href={href('/assets/images/avatar.png')} />
     <link rel='alternate' type='application/rss+xml' title='sychostar' href={href('/feed.xml')} />
     <link rel='stylesheet' href={href('/assets/lib/fontawesome-free/css/all.min.css')} />

@@ -1,0 +1,68 @@
+---
+import { comments } from '../site.config'
+---
+
+{comments.enable && <section class='comments' aria-labelledby='comments-title' data-pagefind-ignore>
+  <h2 id='comments-title'>评论</h2>
+  <p class='comments-hint'>使用 GitHub 账号登录，交流想法或指出笔记中的问题。</p>
+  <div class='giscus'
+    data-repo={comments.repo}
+    data-repo-id={comments.repoId}
+    data-category={comments.category}
+    data-category-id={comments.categoryId}
+  ></div>
+  <p class='comments-fallback'>若评论区未加载，可前往 <a href={`https://github.com/${comments.repo}/discussions`}>GitHub Discussions</a>。</p>
+  <noscript><p>启用 JavaScript 后即可在此查看和发表评论。</p></noscript>
+</section>}
+
+<script>
+  const container = document.querySelector<HTMLElement>('.giscus')
+  if (container) {
+    const getTheme = () => document.documentElement.classList.contains('dark') ? 'noborder_dark' : 'noborder_light'
+    const script = document.createElement('script')
+    script.src = 'https://giscus.app/client.js'
+    script.async = true
+    script.crossOrigin = 'anonymous'
+    Object.assign(script.dataset, {
+      ...container.dataset,
+      mapping: 'pathname',
+      strict: '1',
+      reactionsEnabled: '1',
+      emitMetadata: '0',
+      inputPosition: 'top',
+      theme: getTheme(),
+      lang: 'zh-CN',
+      loading: 'lazy'
+    })
+
+    const syncTheme = () => {
+      const theme = getTheme()
+      script.dataset.theme = theme
+      container.querySelector<HTMLIFrameElement>('iframe.giscus-frame')?.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme } } }, 'https://giscus.app'
+      )
+    }
+    new MutationObserver(syncTheme).observe(document.documentElement, {
+      attributes: true, attributeFilter: ['class']
+    })
+    // A lazy iframe may finish loading after the user changes the site theme.
+    const frameObserver = new MutationObserver(() => {
+      const frame = container.querySelector<HTMLIFrameElement>('iframe.giscus-frame')
+      if (frame) {
+        frame.addEventListener('load', syncTheme)
+        frameObserver.disconnect()
+      }
+    })
+    frameObserver.observe(container, { childList: true })
+    container.appendChild(script)
+  }
+</script>
+
+<style>
+  .comments { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); }
+  h2 { font-size: 1.25rem; font-weight: 600; }
+  .comments-hint, .comments-fallback { color: hsl(var(--muted-foreground)); font-size: .875rem; line-height: 1.7; }
+  .comments-hint { margin: .5rem 0 1.25rem; }
+  .comments-fallback { margin-top: .75rem; }
+  a { text-decoration: underline; text-underline-offset: 3px; }
+</style>

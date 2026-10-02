@@ -102,7 +102,13 @@ About 的 Steam 卡片使用 `site-template/_data/steam.json` 保存发布快照
 
 顶部路径导航按笔记所在目录显示完整层级，例如 Home › Course › FDS-ZJU › notes › 算法分析基础，每个上级目录均可点击返回；窄窗口中保留该路径并支持横向滚动，不再显示笼统的 Post。目录名称优先使用 `labels`，其次使用公开目录首页的标题，最后使用文件夹名；顶层栏目使用侧栏名称。
 
-Course 和 Reading 的目录使用浏览器原生折叠控件。旧标签、分类和分页网址继续可用。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`，Pure 的来源及改动见 `PURE-NOTICE.md`。当前未配置评论与 PWA 离线缓存。
+Course 和 Reading 的目录使用浏览器原生折叠控件。旧标签、分类和分页网址继续可用。静态资源版本及许可证见 `site-template/THIRD_PARTY.md`，Pure 的来源及改动见 `PURE-NOTICE.md`。当前未配置 PWA 离线缓存。
+
+### 文章评论（Giscus）
+
+Pure 的每篇笔记在上一篇／下一篇导航下显示 Giscus 评论区；首页、目录、标签和 About 不显示。配置位于 `src/site.config.ts` 的 `comments`，组件位于 `src/components/Comments.astro`。评论保存在 `LiHaoze-Bob/notes-site` 的 Discussions → Announcements，仓库必须开启 Discussions，并通过 [Giscus GitHub App](https://github.com/apps/giscus) 授权访问该仓库。访客登录 GitHub 后可评论、回复和添加表情。
+
+使用 `pathname` 映射和严格匹配，每篇文章有独立讨论；第一次评论或回应时自动创建讨论。修改标题不会影响关联，修改文章路径则需要迁移对应讨论标题及严格匹配哈希（见 [Giscus 文档](https://github.com/giscus/giscus/blob/main/ADVANCED-USAGE.md#data-strict)）。评论 iframe 懒加载，主题跟随网站实际深浅色状态；评论区域不进入站内搜索索引。正式站点 canonical URL 用作讨论回链，本地预览也不会生成 localhost 回链。关闭评论可设置 `comments.enable: false`，已有讨论仍保留在 GitHub。
 
 Pure 的 About 和笔记标题下显示 `views`，使用[不蒜子](https://busuanzi.ibruce.info/)记录当前页面的累计访问次数（PV，重复访问会累加，不代表独立访客数）。计数由第三方服务按页面网址保存，不能补回接入前的历史访问；更换域名或路径可能重新计数。`src/components/PageViews.astro` 仅在 `astro.config.ts` 配置的正式站点域名加载计数脚本，本地预览不请求统计服务。加载中、脚本被拦截或服务不可用时显示 `— views`，正文正常显示；Chirpy 回退主题保持原状。
 

@@ -5,6 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import '../../site-template/assets/css/about.css'
 import Home from '../components/Home.astro'
 import PageViews from '../components/PageViews.astro'
+import Comments from '../components/Comments.astro'
 import SectionTags from '../components/SectionTags.astro'
 import TagsPage from '../components/TagsPage.astro'
 import { pages, notes, date, type NotePage } from '../lib/content'
@@ -51,12 +52,12 @@ const isSection = page && ['courses', 'reading', 'knowledge'].includes(page.rout
     </Fragment>
     <Fragment set:html={page.html} />
     {page.tagLinks?.length ? <nav class='note-tags' aria-label='标签'>{page.tagLinks.map(tag => <a href={href(tag.url)}>#{tag.title}</a>)}</nav> : null}
-    {page.isNote && <nav class='post-navigation' slot='bottom' aria-label='同目录文章'>
+    {page.isNote && <Fragment slot='bottom'><nav class='post-navigation' aria-label='同目录文章'>
       {(['folder_previous', 'folder_next'] as const).map((key, i) => {
         const neighbor = page[key]
         return neighbor ? <a href={href(neighbor.url)} aria-label={i === 0 ? 'Older' : 'Newer'}><small>{i === 0 ? '← Older' : 'Newer →'}</small><span>{neighbor.title}</span></a> : <span class='disabled' aria-label={i === 0 ? 'Older' : 'Newer'}><small>{i === 0 ? '← Older' : 'Newer →'}</small><span>—</span></span>
       })}
-    </nav>}
+    </nav><Comments /></Fragment>}
   </ContentLayout>
 )}
 
